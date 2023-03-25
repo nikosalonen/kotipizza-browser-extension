@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.sync.get(['alertThreshold', 'coordinates'], (result) => {
-    document.getElementById('alertThreshold').value = result.alertThreshold;
+    document.getElementById('alertThreshold').value = result.alertThreshold || 2.9;
     document.getElementById('coordinates').value = result.coordinates;
+    document.getElementById('alertEnabled').checked = result.alertEnabled;
   });
 });
 document.getElementById('save').addEventListener('click', () => {
