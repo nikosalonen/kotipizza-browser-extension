@@ -83,7 +83,7 @@ function poll() {
     if (result.alertEnabled) {
       checkDeliveryFees(result.coordinates, result.alertThreshold);
     }
-    setTimeout(poll, 30 * 1000); // Poll every 10 minutes
+    setTimeout(poll, 5 * 60 * 1000); // Poll every 10 minutes
   });
 }
 
