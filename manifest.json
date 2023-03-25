@@ -10,11 +10,14 @@
     "service_worker": "background.js"
   },
   "permissions": [
+    "webRequest",
     "alarms",
     "notifications",
     "storage"
   ],
+  "devtools_page": "devtools.html",
   "host_permissions": [
-    "https://apim-kotipizza-ecom-prod.azure-api.net/"
+    "https://apim-kotipizza-ecom-prod.azure-api.net/",
+    "*://*.kotipizza.fi/*"
   ]
 }
