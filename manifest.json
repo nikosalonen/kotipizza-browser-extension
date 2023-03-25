@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Kotipizza Delivery Alert",
+  "version": "1.0",
+  "description": "Get notifications for nearby Kotipizza restaurants with delivery fees below a set threshold.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "alarms",
+    "notifications",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://apim-kotipizza-ecom-prod.azure-api.net/"
+  ]
+}
