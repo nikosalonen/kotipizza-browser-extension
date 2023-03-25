@@ -1,5 +1,42 @@
 const API_URL = 'https://apim-kotipizza-ecom-prod.azure-api.net/webshop/v1/restaurants/nearby?type=DELIVERY&coordinates=';
 
+chrome.webRequest.onCompleted.addListener(
+  (details) => {
+
+    if (
+      details.url.startsWith('https://apim-kotipizza-ecom-prod.azure-api.net/webshop/v1/restaurants/nearby') &&
+      details.method === 'GET' &&
+      details.statusCode === 200 &&
+      details.initiator === "https://www.kotipizza.fi"
+    ) {
+
+      //value of coordinates is coords parameter from details.url
+      const coordinates = details.url.split('coordinates=')[1];
+      chrome.storage.sync.set({ coordinates });
+    }
+  },
+  {
+    urls: [
+      'https://apim-kotipizza-ecom-prod.azure-api.net/webshop/v1/restaurants/nearby?type=DELIVERY&coordinates=*',
+    ]
+  }
+);
+
+
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'saveCoordinates') {
+    const { coordinates } = message;
+
+    // Check if coordinates are already saved
+    chrome.storage.sync.get(['coordinates'], (result) => {
+      if (!result.coordinates) {
+        // Save coordinates to storage.sync
+        chrome.storage.sync.set({ coordinates });
+      }
+    });
+  }
+});
 
 
 async function fetchData(coordinates) {
@@ -9,7 +46,6 @@ async function fetchData(coordinates) {
 }
 
 function createNotification(restaurant) {
-  console.log('create Notification!')
   self.registration.showNotification('Kotipizza Delivery Alert', {
     icon: 'icon128.png',
     body: `${restaurant.displayName} has a delivery fee of ${restaurant.dynamicDeliveryFee} and an estimated delivery time of ${restaurant.currentDeliveryEstimate} minutes.`,
