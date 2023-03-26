@@ -4,8 +4,8 @@
 
 <head>
   <style>
-    /* Add your CSS styles */
     html {
+
       @font-face {
         font-family: benton-sans-condensed;
         src: url('./assets/BentonSans Comp Black Regular.otf' format("opentype"));
@@ -13,15 +13,22 @@
     }
 
     body {
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+      padding: 0%;
       font-family: benton-sans-condensed, Arial, Helvetica, sans-serif;
 
       font-size: 14px;
       color: #FFF;
       background-color: #009541;
-      padding: 10px;
     }
 
     h1 {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
       text-transform: uppercase;
       font-style: normal;
       font-weight: 600;
@@ -30,21 +37,42 @@
       letter-spacing: 0.01em;
     }
 
+    #form {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    #coordinates {
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: red;
+      padding: 15px 5px;
+    }
+
   </style>
 </head>
 
 <body>
   <h1>Kotipizza Delivery Alert</h1>
-  <label for="alertThreshold">Toimitushinta (€):</label>
-  <input type="number" id="alertThreshold" min="2.9" step="8.9">
-  <br>
+  <form id="form">
 
-  <label for="alertEnabled">Seuranta päällä?:</label>
-  <input type="checkbox" id="alertEnabled">
-  <br>
-  <span id="coordinates"></span>
-  <button id="save">Tallenna</button>
+    <label for="alertThreshold">Toimitushinta (2.9 - 8.9€):</label>
+    <input type="number" id="alertThreshold" min="2.9" step="8.9">
+    <br>
+
+    <label for="alertEnabled">Seuranta päällä?:</label>
+    <input type="checkbox" id="alertEnabled">
+    <br>
+    <button id="save">Tallenna</button>
+  </form>
   <script src="popup.js"></script>
+  <span id="coordinates"></span>
 </body>
 
 </html>
