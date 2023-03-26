@@ -4,7 +4,8 @@
   "version": "1.0",
   "description": "Get notifications for nearby Kotipizza restaurants with delivery fees below a set threshold.",
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": "assets/icon128-grayscale.png"
   },
   "background": {
     "service_worker": "background.js"
@@ -18,5 +19,9 @@
   "host_permissions": [
     "https://apim-kotipizza-ecom-prod.azure-api.net/",
     "*://*.kotipizza.fi/*"
-  ]
+  ],
+  "icons": {
+    "128": "assets/icon128.png"
+  },
+  "options_page": "options.html"
 }
