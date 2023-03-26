@@ -77,14 +77,14 @@
       transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
-    input[type="text"],
+    input[type="range"],
     input[type="checkbox"] {
       display: block;
       width: 100%;
       box-sizing: border-box;
     }
 
-    input[type="text"] {
+    input[type="range"] {
       border: 2px solid #6bd1a2;
       background-color: #2e9151;
       color: #FFF;
@@ -114,12 +114,12 @@
       background-color: #57b48b;
     }
 
-    input[type="text"]:focus,
+    input[type="range"]:focus,
     button:focus {
       box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
     }
 
-    input[type="text"]:focus {
+    input[type="range"]:focus {
       border-color: #FFF;
     }
 
@@ -177,6 +177,37 @@
       padding: 5px;
     }
 
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      background-color: transparent;
+      margin: 10px 0;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 5px;
+      background-color: #2e9151;
+      border-radius: 25px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background-color: #6bd1a2;
+      border-radius: 50%;
+      cursor: pointer;
+      margin-top: -7.5px;
+    }
+
+    input[type="range"]:focus {
+      outline: none;
+    }
+
+    input[type="range"]:focus::-webkit-slider-runnable-track {
+      background-color: #4da66d;
+    }
+
   </style>
 </head>
 
@@ -185,7 +216,8 @@
   <div id="form">
 
     <label for="alertThreshold">Toimitushinta (2,9 - 8,9€):</label>
-    <input type="text" id="alertThreshold">
+    <input type="range" id="alertThreshold" min="2.9" max="8.9" step="0.1">
+    <span id="alertThresholdValue"></span>
     <br>
     <label for="alertAmount">Ilmoitus tyyli</label>
     <select id="alertAmount">

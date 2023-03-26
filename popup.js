@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Get the current values from storage and populate the inputs
   chrome.storage.local.get(['alertThreshold', 'coordinates', 'alertEnabled', 'restaurants', 'alertAmount'], (result) => {
-    document.getElementById('alertThreshold').value = `${result.alertThreshold}`.replace('.', ',');
+
+    document.getElementById('alertThreshold').value = result.alertThreshold;
     document.getElementById('alertEnabled').checked = result.alertEnabled;
 
     //select the alertAmount option that matches the value in storage
@@ -29,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Save button click event listener
   document.getElementById('save').addEventListener('click', () => {
-    const alertThreshold = parseFloat((document.getElementById('alertThreshold').value).replace(',', '.'));
+    const alertThreshold = parseFloat((document.getElementById('alertThreshold').value));
     const alertEnabled = document.getElementById('alertEnabled').checked;
     const saveStatus = document.getElementById('saveStatus');
     const alertAmount = document.getElementById('alertAmount').value;
@@ -106,6 +107,21 @@ document.addEventListener('DOMContentLoaded', () => {
   function stopPolling() {
     chrome.runtime.sendMessage({ action: 'stopPolling' });
   }
+
+
+  function updateAlertThresholdValue(value) {
+    document.getElementById('alertThresholdValue').textContent = value;
+  }
+
+  document.getElementById('alertThreshold').addEventListener('input', (event) => {
+    chrome.storage.local.set({
+      alertThreshold: event.target.value,
+    })
+    updateAlertThresholdValue(event.target.value);
+  });
+
+  // Add the following line inside the DOMContentLoaded event listener
+  updateAlertThresholdValue(document.getElementById('alertThreshold').value);
 
 
 });
