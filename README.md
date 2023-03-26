@@ -7,7 +7,8 @@ Icon by Satawat Foto Anukul https://freeicons.io/profile/103766
 
 ## How to
 
-![Screenshot 2023-03-26 170349](https://user-images.githubusercontent.com/185737/227782976-579ebc56-6b42-4a4e-aab6-bf81cabacf75.png)
+![image](https://user-images.githubusercontent.com/185737/227783507-ab6e8322-791a-4572-984c-b966fde1b33c.png)
+
 
 * Set alert treshold
 * Choose if you want cheapest or fastest delivery if multiple restaurants available
