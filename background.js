@@ -60,13 +60,7 @@ async function checkDeliveryFees(coordinates, alertThreshold, alertAmount) {
         createNotification(lowestDeliveryEstimate);
       }
     }
-    //if alertAmount is 3, create notification for all restaurant with the lowest delivery fee that is not closed and has a delivery fee lower than alertThreshold and sort them by delivery fee
-    else if (alertAmount === "3") {
-      const lowestDeliveryFee = data.filter(restaurant => restaurant.openForDeliveryStatus !== "CLOSED" && restaurant.dynamicDeliveryFee <= alertThreshold).sort((a, b) => a.dynamicDeliveryFee - b.dynamicDeliveryFee);
-      lowestDeliveryFee.forEach(restaurant => {
-        createNotification(restaurant);
-      });
-    }
+
 
   } catch (error) {
     console.error('Error fetching data:', error); // Add this line
