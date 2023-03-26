@@ -15,7 +15,6 @@
     "notifications",
     "storage"
   ],
-  "devtools_page": "devtools.html",
   "host_permissions": [
     "https://apim-kotipizza-ecom-prod.azure-api.net/",
     "*://*.kotipizza.fi/*"
