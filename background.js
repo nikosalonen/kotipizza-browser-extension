@@ -1,38 +1,6 @@
 const API_URL = 'https://apim-kotipizza-ecom-prod.azure-api.net/webshop/v1/restaurants/nearby?type=DELIVERY&coordinates=';
 let pollingTimeoutID;
 
-// get coordinates from kotipizza.fi nearby restaurants api
-chrome.webRequest.onCompleted.addListener(
-  (details) => {
-
-    if (
-      details.url.startsWith('https://apim-kotipizza-ecom-prod.azure-api.net/webshop/v1/restaurants/nearby') &&
-      details.method === 'GET' &&
-      details.statusCode === 200 &&
-      details.initiator === "https://www.kotipizza.fi"
-    ) {
-
-      //value of coordinates is coords parameter from details.url
-      const coordinates = details.url.split('coordinates=')[1];
-      chrome.storage.local.set({ coordinates });
-    }
-  },
-  {
-    urls: [
-      'https://apim-kotipizza-ecom-prod.azure-api.net/webshop/v1/restaurants/nearby?type=DELIVERY&coordinates=*',
-    ]
-  }
-);
-
-
-
-function createNotification(restaurant) {
-  self.registration.showNotification('Kotipizza Delivery Alert', {
-    icon: 'icon128.png',
-    body: `${restaurant.displayName} has a delivery fee of ${restaurant.dynamicDeliveryFee} and an estimated delivery time of ${restaurant.currentDeliveryEstimate} minutes.`,
-  });
-}
-
 
 
 async function checkDeliveryFees(coordinates, alertThreshold, alertAmount) {
@@ -68,6 +36,48 @@ async function checkDeliveryFees(coordinates, alertThreshold, alertAmount) {
 }
 
 
+// get coordinates from kotipizza.fi nearby restaurants api
+chrome.webRequest.onCompleted.addListener(
+  (details) => {
+    if (
+      details.url.startsWith('https://apim-kotipizza-ecom-prod.azure-api.net/webshop/v1/restaurants/nearby') &&
+      details.method === 'GET' &&
+      details.statusCode === 200 &&
+      details.initiator === "https://www.kotipizza.fi"
+    ) {
+
+      //value of coordinates is coords parameter from details.url
+      const coordinates = details.url.split('coordinates=')[1];
+      chrome.storage.local.set({ coordinates }, () => {
+        console.log("coordinates saved to storage")
+        chrome.storage.local.get(['coordinates', 'alertThreshold', 'alertEnabled', 'alertAmount'], (result) => {
+          const alertThreshold = result.alertThreshold;
+          const alertAmount = result.alertAmount;
+          checkDeliveryFees(coordinates, alertThreshold, alertAmount);
+        });
+      });
+    }
+  },
+  {
+    urls: [
+      'https://apim-kotipizza-ecom-prod.azure-api.net/webshop/v1/restaurants/nearby?type=DELIVERY&coordinates=*',
+    ]
+  }
+);
+
+
+
+function createNotification(restaurant) {
+  self.registration.showNotification('🍕 Pizza time!', {
+    icon: 'icon128.png',
+    body: `${restaurant.displayName} has a delivery fee of ${restaurant.dynamicDeliveryFee} and an estimated delivery time of ${restaurant.currentDeliveryEstimate} minutes.`,
+  });
+}
+
+
+
+
+
 chrome.storage.local.get(['coordinates', 'alertThreshold', 'alertEnabled', 'alertAmount'], (result) => {
   if (result.alertEnabled) {
     checkDeliveryFees(result.coordinates, result.alertThreshold, result.alertAmount);
@@ -87,9 +97,11 @@ function poll(timeout) {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'startPolling') {
-    poll(10 * 60 * 1000);
+    poll(30 * 1000);
   }
   else if (request.action === 'stopPolling') {
+    chrome.storage.local.set({ restaurants: [] })
     clearTimeout(pollingTimeoutID);
+
   }
 });
