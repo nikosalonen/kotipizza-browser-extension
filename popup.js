@@ -4,10 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('alertThreshold').value = result.alertThreshold;
     document.getElementById('alertEnabled').checked = result.alertEnabled;
     console.log(result.coordinates);
+    const coords = document.getElementById('coordinates');
     if (!result.coordinates) {
-      document.getElementById('coordinates').innerHTML = 'Ei sijantitietoa, käy asettamassa toimitusosoite kotipizza.fi sivulla.';
+      coords.innerHTML = 'Ei sijantitietoa, käy asettamassa toimitusosoite kotipizza.fi sivulla.';
+      coords.style.display = "flex"
     } else {
       document.getElementById('coordinates').innerHTML = "";
+      coords.style.display = "none"
     }
   });
 
