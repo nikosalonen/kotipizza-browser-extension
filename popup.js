@@ -1,9 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Get the current values from storage and populate the inputs
-  chrome.storage.local.get(['alertThreshold', 'coordinates', 'alertEnabled'], (result) => {
-    document.getElementById('alertThreshold').value = result.alertThreshold;
+  chrome.storage.local.get(['alertThreshold', 'coordinates', 'alertEnabled', 'restaurants'], (result) => {
+    document.getElementById('alertThreshold').value = `${result.alertThreshold}`.replace('.', ',');
     document.getElementById('alertEnabled').checked = result.alertEnabled;
-    console.log(result.coordinates);
+    if (result.restaurants?.length) {
+      generateRestaurantsTable(result.restaurants);
+    }
     const coords = document.getElementById('coordinates');
     if (!result.coordinates) {
       coords.innerHTML = 'Ei sijantitietoa, käy asettamassa toimitusosoite kotipizza.fi sivulla.';
@@ -16,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Save button click event listener
   document.getElementById('save').addEventListener('click', () => {
-    const alertThreshold = parseFloat(document.getElementById('alertThreshold').value);
+    const alertThreshold = parseFloat((document.getElementById('alertThreshold').value).replace(',', '.'));
     const alertEnabled = document.getElementById('alertEnabled').checked;
     const saveStatus = document.getElementById('saveStatus');
 
@@ -38,6 +40,47 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+
+  function generateRestaurantsTable(restaurants) {
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
+    table.style.marginTop = '20px';
+
+    const headerRow = document.createElement('tr');
+
+    ['Ravintola', 'Toimitusmaksu (€)', 'Toimitusarvio (minuttia)'].forEach((headerText) => {
+      const header = document.createElement('th');
+      header.textContent = headerText;
+      header.style.border = '2px solid #FFF';
+      header.style.padding = '10px';
+      header.style.backgroundColor = '#2e9151';
+      header.style.color = '#FFF';
+      headerRow.appendChild(header);
+    });
+
+    table.appendChild(headerRow);
+
+    restaurants.forEach((restaurant) => {
+      const row = document.createElement('tr');
+
+      [restaurant.displayName, restaurant.dynamicDeliveryFee, restaurant.currentDeliveryEstimate].forEach((value) => {
+        const cell = document.createElement('td');
+        cell.textContent = value;
+        cell.style.border = '2px solid #FFF';
+        cell.style.padding = '10px';
+        cell.style.backgroundColor = '#4da66d';
+        cell.style.color = '#FFF';
+        row.appendChild(cell);
+      });
+
+      table.appendChild(row);
+    });
+
+    document.getElementById('restaurantsTable').appendChild(table);
+
+  }
 
 
 
