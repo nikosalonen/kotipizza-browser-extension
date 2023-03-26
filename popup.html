@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="fi">
 <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 
 <head>
   <style>
     html {
+      height: 200px;
+
+      width: 300px;
 
       @font-face {
         font-family: benton-sans-condensed;
@@ -55,24 +58,86 @@
       padding: 15px 5px;
     }
 
+    input,
+    button {
+      font-size: 16px;
+      border-radius: 25px;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px 0;
+      outline: none;
+      transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input[type="text"],
+    input[type="checkbox"] {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    input[type="text"] {
+      border: 2px solid #6bd1a2;
+      background-color: #2e9151;
+      color: #FFF;
+    }
+
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #6bd1a2;
+      background-color: transparent;
+      cursor: pointer;
+    }
+
+    input[type="checkbox"]:checked {
+      background-color: #6bd1a2;
+    }
+
+    button {
+      background-color: #6bd1a2;
+      color: #FFF;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #57b48b;
+    }
+
+    input[type="text"]:focus,
+    button:focus {
+      box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    }
+
+    input[type="text"]:focus {
+      border-color: #FFF;
+    }
+
   </style>
 </head>
 
 <body>
   <h1>Kotipizza Delivery Alert</h1>
-  <form id="form">
+  <div id="form">
 
-    <label for="alertThreshold">Toimitushinta (2.9 - 8.9€):</label>
-    <input type="number" id="alertThreshold" min="2.9" step="8.9">
+    <label for="alertThreshold">Toimitushinta (2,9 - 8,9€):</label>
+    <input type="text" id="alertThreshold">
     <br>
 
     <label for="alertEnabled">Seuranta päällä?:</label>
     <input type="checkbox" id="alertEnabled">
     <br>
     <button id="save">Tallenna</button>
-  </form>
+    <span id="saveStatus"></span>
+
+  </div>
   <script src="popup.js"></script>
   <span id="coordinates"></span>
+
+
+  <div>
+    <table id="restaurants"></table>
+  </div>
 </body>
 
 </html>

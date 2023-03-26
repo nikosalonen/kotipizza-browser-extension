@@ -18,16 +18,27 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('save').addEventListener('click', () => {
     const alertThreshold = parseFloat(document.getElementById('alertThreshold').value);
     const alertEnabled = document.getElementById('alertEnabled').checked;
-
-    console.log(alertEnabled, alertThreshold);
+    const saveStatus = document.getElementById('saveStatus');
 
     chrome.storage.local.set({
       alertThreshold: alertThreshold,
       alertEnabled: alertEnabled,
     }, () => {
-      console.log('Tallennettu!');
+      const lastError = chrome.runtime.lastError;
+      if (lastError) {
+        saveStatus.innerHTML = `Tallennus epäonnistui: ${lastError.message}`;
+        saveStatus.style.color = 'red';
+      } else {
+        saveStatus.innerHTML = 'Tallennettu!';
+        saveStatus.style.color = 'white';
+        // Optionally, clear the message after a few seconds
+        setTimeout(() => {
+          saveStatus.innerHTML = '';
+        }, 3000);
+      }
     });
   });
+
 
 
 });
