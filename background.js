@@ -70,11 +70,25 @@ chrome.webRequest.onCompleted.addListener(
 function createNotification(restaurant) {
   self.registration.showNotification('🍕 Pizza time!', {
     icon: 'icon128.png',
-    body: `${restaurant.displayName} has a delivery fee of ${restaurant.dynamicDeliveryFee} and an estimated delivery time of ${restaurant.currentDeliveryEstimate} minutes.`,
+    body: `Toimitusmaksu ravintolassa ${restaurant.displayName} on nyt ${restaurant.dynamicDeliveryFee}€! \nToimitusarvio on ${restaurant.currentDeliveryEstimate} minuttia.`
+
   });
 }
 
 
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close(); // Close the notification
+
+  // Perform your desired action, for example, opening a URL in a new tab
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then((clientList) => {
+      if (clientList.length > 0) {
+        return clientList[0].focus();
+      }
+      return clients.openWindow('https://kotipizza.fi'); // Replace with the desired URL
+    })
+  );
+});
 
 
 
@@ -97,7 +111,7 @@ function poll(timeout) {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'startPolling') {
-    poll(30 * 1000);
+    poll(10 * 60 * 1000);
   }
   else if (request.action === 'stopPolling') {
     chrome.storage.local.set({ restaurants: [] })
