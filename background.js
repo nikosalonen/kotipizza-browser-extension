@@ -12,7 +12,7 @@ chrome.webRequest.onCompleted.addListener(
 
       //value of coordinates is coords parameter from details.url
       const coordinates = details.url.split('coordinates=')[1];
-      chrome.storage.sync.set({ coordinates });
+      chrome.storage.local.set({ coordinates });
     }
   },
   {
@@ -28,10 +28,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const { coordinates } = message;
 
     // Check if coordinates are already saved
-    chrome.storage.sync.get(['coordinates'], (result) => {
+    chrome.storage.local.get(['coordinates'], (result) => {
       if (!result.coordinates) {
         // Save coordinates to storage.sync
-        chrome.storage.sync.set({ coordinates });
+        chrome.storage.local.set({ coordinates });
       }
     });
   }

@@ -1,28 +1,35 @@
 document.addEventListener('DOMContentLoaded', () => {
-  chrome.storage.sync.get(['alertThreshold', 'coordinates'], (result) => {
-    document.getElementById('alertThreshold').value = result.alertThreshold || 2.9;
-    document.getElementById('coordinates').value = result.coordinates;
+  // Get the current values from storage and populate the inputs
+  chrome.storage.local.get(['alertThreshold', 'coordinates', 'alertEnabled'], (result) => {
+    document.getElementById('alertThreshold').value = result.alertThreshold;
     document.getElementById('alertEnabled').checked = result.alertEnabled;
+    if (!result.coordinates) {
+      document.getElementById('coordinates').innerHTML = 'Ei koordinaatteja, käy asettamassa sijainti kotipizza.fi sivulla.';
+    } else {
+      document.getElementById('coordinates').innerHTML = "";
+    }
   });
-});
-document.getElementById('save').addEventListener('click', () => {
-  const coordinates = document.getElementById('coordinates').value;
-  const alertThreshold = parseFloat(document.getElementById('alertThreshold').value);
-  const alertEnabled = document.getElementById('alertEnabled').checked;
 
-  chrome.storage.local.set({
-    coordinates: coordinates,
-    alertThreshold: alertThreshold,
-    alertEnabled: alertEnabled,
-  }, () => {
-    console.log('Settings saved');
+  // Save button click event listener
+  document.getElementById('save').addEventListener('click', () => {
+    const alertThreshold = parseFloat(document.getElementById('alertThreshold').value);
+    const alertEnabled = document.getElementById('alertEnabled').checked;
+
+    console.log(alertEnabled, alertThreshold);
+
+    chrome.storage.local.set({
+      alertThreshold: alertThreshold,
+      alertEnabled: alertEnabled,
+    }, () => {
+      console.log('Tallennettu!');
+    });
   });
-});
 
-
-async function requestNotificationPermission() {
-  const permission = await Notification.requestPermission();
-  if (permission !== 'granted') {
-    throw new Error('Permission not granted for notifications.');
+  // Request notification permission
+  async function requestNotificationPermission() {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      throw new Error('Permission not granted for notifications.');
+    }
   }
-}
+});
