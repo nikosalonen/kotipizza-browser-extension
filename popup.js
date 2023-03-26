@@ -1,8 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Get the current values from storage and populate the inputs
-  chrome.storage.local.get(['alertThreshold', 'coordinates', 'alertEnabled', 'restaurants'], (result) => {
+  chrome.storage.local.get(['alertThreshold', 'coordinates', 'alertEnabled', 'restaurants', 'alertAmount'], (result) => {
     document.getElementById('alertThreshold').value = `${result.alertThreshold}`.replace('.', ',');
     document.getElementById('alertEnabled').checked = result.alertEnabled;
+
+    //select the alertAmount option that matches the value in storage
+    const alertAmount = document.getElementById('alertAmount');
+    for (let i = 0; i < alertAmount.options.length; i++) {
+      if (alertAmount.options[i].value === result.alertAmount) {
+        alertAmount.options[i].selected = true;
+        break;
+      }
+    }
+
+
     if (result.restaurants?.length && result.alertEnabled) {
       generateRestaurantsTable(result.restaurants);
     }
@@ -21,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const alertThreshold = parseFloat((document.getElementById('alertThreshold').value).replace(',', '.'));
     const alertEnabled = document.getElementById('alertEnabled').checked;
     const saveStatus = document.getElementById('saveStatus');
+    const alertAmount = document.getElementById('alertAmount').value;
     if (alertEnabled) {
       startPolling();
     } else {
@@ -29,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.storage.local.set({
       alertThreshold: alertThreshold,
       alertEnabled: alertEnabled,
+      alertAmount: alertAmount,
     }, () => {
       const lastError = chrome.runtime.lastError;
       if (lastError) {
