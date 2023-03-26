@@ -1,4 +1,5 @@
 const API_URL = 'https://apim-kotipizza-ecom-prod.azure-api.net/webshop/v1/restaurants/nearby?type=DELIVERY&coordinates=';
+let pollingTimeoutID;
 
 // get coordinates from kotipizza.fi nearby restaurants api
 chrome.webRequest.onCompleted.addListener(
@@ -46,7 +47,7 @@ async function checkDeliveryFees(coordinates, alertThreshold) {
       chrome.storage.local.set({ restaurants: data });
     }
     data.forEach((restaurant) => {
-      if (restaurant.openForDeliveryStatus !== "CLOSED" &&  restaurant.dynamicDeliveryFee <= alertThreshold) {
+      if (restaurant.openForDeliveryStatus !== "CLOSED" && restaurant.dynamicDeliveryFee <= alertThreshold) {
         createNotification(restaurant);
       }
 
@@ -64,16 +65,22 @@ chrome.storage.local.get(['coordinates', 'alertThreshold', 'alertEnabled'], (res
   }
 });
 
-function poll() {
+function poll(timeout) {
   chrome.storage.local.get(['coordinates', 'alertThreshold', 'alertEnabled'], (result) => {
-    console.log('Polling:', result); // Add this line
+    console.log('Polling:', result);
     if (result.alertEnabled) {
       checkDeliveryFees(result.coordinates, result.alertThreshold);
+      pollingTimeoutID = setTimeout(() => poll(timeout), timeout);
     }
-    setTimeout(poll,  60 * 1000); // Poll every 10 minutes
   });
 }
 
 
-// Start the polling
-poll();
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'startPolling') {
+    poll(10 * 60 * 1000);
+  }
+  else if (request.action === 'stopPolling') {
+    clearTimeout(pollingTimeoutID);
+  }
+});
