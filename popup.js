@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.local.get(['alertThreshold', 'coordinates', 'alertEnabled', 'restaurants'], (result) => {
     document.getElementById('alertThreshold').value = `${result.alertThreshold}`.replace('.', ',');
     document.getElementById('alertEnabled').checked = result.alertEnabled;
-    if (result.restaurants?.length) {
+    if (result.restaurants?.length && result.alertEnabled) {
       generateRestaurantsTable(result.restaurants);
     }
     const coords = document.getElementById('coordinates');
@@ -21,7 +21,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const alertThreshold = parseFloat((document.getElementById('alertThreshold').value).replace(',', '.'));
     const alertEnabled = document.getElementById('alertEnabled').checked;
     const saveStatus = document.getElementById('saveStatus');
-
+    if (alertEnabled) {
+      startPolling();
+    } else {
+      stopPolling();
+    }
     chrome.storage.local.set({
       alertThreshold: alertThreshold,
       alertEnabled: alertEnabled,
@@ -82,6 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   }
 
+  function startPolling() {
+    chrome.runtime.sendMessage({ action: 'startPolling' });
+  }
+
+  function stopPolling() {
+    chrome.runtime.sendMessage({ action: 'stopPolling' });
+  }
 
 
 });
