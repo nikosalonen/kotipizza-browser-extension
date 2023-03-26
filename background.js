@@ -1,5 +1,6 @@
 const API_URL = 'https://apim-kotipizza-ecom-prod.azure-api.net/webshop/v1/restaurants/nearby?type=DELIVERY&coordinates=';
 
+// get coordinates from kotipizza.fi nearby restaurants api
 chrome.webRequest.onCompleted.addListener(
   (details) => {
 
@@ -23,26 +24,6 @@ chrome.webRequest.onCompleted.addListener(
 );
 
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'saveCoordinates') {
-    const { coordinates } = message;
-
-    // Check if coordinates are already saved
-    chrome.storage.local.get(['coordinates'], (result) => {
-      if (!result.coordinates) {
-        // Save coordinates to storage.sync
-        chrome.storage.local.set({ coordinates });
-      }
-    });
-  }
-});
-
-
-async function fetchData(coordinates) {
-  const response = await fetch(API_URL + coordinates);
-  const data = await response.json();
-  return data;
-}
 
 function createNotification(restaurant) {
   self.registration.showNotification('Kotipizza Delivery Alert', {
@@ -59,10 +40,17 @@ async function checkDeliveryFees(coordinates, alertThreshold) {
     const response = await fetch(url);
     const data = await response.json();
     console.log('Fetched data:', data); // Add this line
+
+    //if data has restaurants, save them to storage
+    if (data.length > 0) {
+      chrome.storage.local.set({ restaurants: data });
+    }
     data.forEach((restaurant) => {
       if (restaurant.openForDeliveryStatus !== "CLOSED" &&  restaurant.dynamicDeliveryFee <= alertThreshold) {
         createNotification(restaurant);
       }
+
+
     });
   } catch (error) {
     console.error('Error fetching data:', error); // Add this line
