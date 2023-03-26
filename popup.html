@@ -4,10 +4,17 @@
 
 <head>
   <style>
-    html {
-      height: 200px;
+    html,
+    body {
+      height: auto !important;
+      min-height: 100%;
+      overflow: visible !important;
+      width: 450px;
 
-      width: 300px;
+    }
+
+    html {
+
 
       @font-face {
         font-family: benton-sans-condensed;
@@ -113,6 +120,28 @@
       border-color: #FFF;
     }
 
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th,
+    td {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #2e9151;
+      color: #FFF;
+    }
+
+    td {
+      background-color: #4da66d;
+      color: #FFF;
+    }
+
   </style>
 </head>
 
@@ -135,9 +164,8 @@
   <span id="coordinates"></span>
 
 
-  <div>
-    <table id="restaurants"></table>
-  </div>
+  <div id="restaurantsTable"></div>
+
 </body>
 
 </html>
