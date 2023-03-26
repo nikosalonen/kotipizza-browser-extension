@@ -35,7 +35,7 @@ function createNotification(restaurant) {
 
 
 
-async function checkDeliveryFees(coordinates, alertThreshold) {
+async function checkDeliveryFees(coordinates, alertThreshold, alertAmount) {
   const url = `${API_URL}${coordinates}`;
   try {
     const response = await fetch(url);
@@ -46,30 +46,45 @@ async function checkDeliveryFees(coordinates, alertThreshold) {
     if (data.length > 0) {
       chrome.storage.local.set({ restaurants: data });
     }
-    data.forEach((restaurant) => {
-      if (restaurant.openForDeliveryStatus !== "CLOSED" && restaurant.dynamicDeliveryFee <= alertThreshold) {
-        createNotification(restaurant);
+    //if alertAmount is 1, create notification for the restaurant with the lowest delivery fee that is not closed and has a delivery fee lower than alertThreshold
+    if (alertAmount === "1") {
+      const lowestDeliveryFee = data.reduce((prev, current) => (prev.dynamicDeliveryFee < current.dynamicDeliveryFee) ? prev : current);
+      if (lowestDeliveryFee.openForDeliveryStatus !== "CLOSED" && lowestDeliveryFee.dynamicDeliveryFee <= alertThreshold) {
+        createNotification(lowestDeliveryFee);
       }
+    }
+    //if alertAmount is 2, create notification for the restaurant with the lowest delivery estimate that is not closed and has a delivery fee lower than alertThreshold
+    else if (alertAmount === "2") {
+      const lowestDeliveryEstimate = data.reduce((prev, current) => (prev.currentDeliveryEstimate < current.currentDeliveryEstimate) ? prev : current);
+      if (lowestDeliveryEstimate.openForDeliveryStatus !== "CLOSED" && lowestDeliveryEstimate.dynamicDeliveryFee <= alertThreshold) {
+        createNotification(lowestDeliveryEstimate);
+      }
+    }
+    //if alertAmount is 3, create notification for all restaurant with the lowest delivery fee that is not closed and has a delivery fee lower than alertThreshold and sort them by delivery fee
+    else if (alertAmount === "3") {
+      const lowestDeliveryFee = data.filter(restaurant => restaurant.openForDeliveryStatus !== "CLOSED" && restaurant.dynamicDeliveryFee <= alertThreshold).sort((a, b) => a.dynamicDeliveryFee - b.dynamicDeliveryFee);
+      lowestDeliveryFee.forEach(restaurant => {
+        createNotification(restaurant);
+      });
+    }
 
-
-    });
   } catch (error) {
     console.error('Error fetching data:', error); // Add this line
   }
 }
 
 
-chrome.storage.local.get(['coordinates', 'alertThreshold', 'alertEnabled'], (result) => {
+chrome.storage.local.get(['coordinates', 'alertThreshold', 'alertEnabled', 'alertAmount'], (result) => {
   if (result.alertEnabled) {
-    checkDeliveryFees(result.coordinates, result.alertThreshold);
+    checkDeliveryFees(result.coordinates, result.alertThreshold, result.alertAmount);
   }
 });
 
 function poll(timeout) {
-  chrome.storage.local.get(['coordinates', 'alertThreshold', 'alertEnabled'], (result) => {
+  chrome.storage.local.get(['coordinates', 'alertThreshold', 'alertEnabled', 'alertAmount'], (result) => {
     console.log('Polling:', result);
     if (result.alertEnabled) {
-      checkDeliveryFees(result.coordinates, result.alertThreshold);
+      checkDeliveryFees(result.coordinates, result.alertThreshold, result.alertAmount);
       pollingTimeoutID = setTimeout(() => poll(timeout), timeout);
     }
   });
