@@ -23,7 +23,6 @@ chrome.webRequest.onCompleted.addListener(
 );
 
 
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'saveCoordinates') {
     const { coordinates } = message;
@@ -61,7 +60,7 @@ async function checkDeliveryFees(coordinates, alertThreshold) {
     const data = await response.json();
     console.log('Fetched data:', data); // Add this line
     data.forEach((restaurant) => {
-      if (restaurant.dynamicDeliveryFee <= alertThreshold) {
+      if (restaurant.openForDeliveryStatus !== "CLOSED" &&  restaurant.dynamicDeliveryFee <= alertThreshold) {
         createNotification(restaurant);
       }
     });
@@ -83,7 +82,7 @@ function poll() {
     if (result.alertEnabled) {
       checkDeliveryFees(result.coordinates, result.alertThreshold);
     }
-    setTimeout(poll, 5 * 60 * 1000); // Poll every 10 minutes
+    setTimeout(poll,  60 * 1000); // Poll every 10 minutes
   });
 }
 
