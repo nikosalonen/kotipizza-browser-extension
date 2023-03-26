@@ -10,6 +10,7 @@
       min-height: 100%;
       overflow: visible !important;
       width: 450px;
+      max-height: 600px;
 
     }
 
@@ -38,7 +39,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      padding: 10px;
       text-transform: uppercase;
       font-style: normal;
       font-weight: 600;
@@ -52,7 +53,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      padding: 10px;
     }
 
     #coordinates {
@@ -71,7 +72,7 @@
       border-radius: 25px;
       border: none;
       padding: 10px 20px;
-      margin: 10px 0;
+      margin: 5px 0;
       outline: none;
       transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
@@ -142,6 +143,11 @@
       color: #FFF;
     }
 
+    #restaurantsTableContainer {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
   </style>
 </head>
 
@@ -164,7 +170,9 @@
   <span id="coordinates"></span>
 
 
-  <div id="restaurantsTable"></div>
+  <div id="restaurantsTableContainer">
+    <div id="restaurantsTable"></div>
+  </div>
 
 </body>
 
