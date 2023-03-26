@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-
     if (result.restaurants?.length && result.alertEnabled) {
       generateRestaurantsTable(result.restaurants);
     }
@@ -39,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       stopPolling();
     }
+    updateIcon(alertEnabled);
     chrome.storage.local.set({
       alertThreshold: alertThreshold,
       alertEnabled: alertEnabled,
@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
       }
     });
+
   });
 
 
@@ -106,6 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function stopPolling() {
     chrome.runtime.sendMessage({ action: 'stopPolling' });
+  }
+
+  function updateIcon(alertEnabled) {
+    chrome.runtime.sendMessage({ action: 'updateIcon', alertEnabled: alertEnabled });
   }
 
 

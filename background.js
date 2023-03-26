@@ -3,6 +3,12 @@ let pollingTimeoutID;
 
 
 
+function updateIcon(alertEnabled) {
+  const iconPath = alertEnabled ? 'assets/icon128.png' : 'assets/icon128-grayscale.png';
+  chrome.action.setIcon({ path: iconPath });
+}
+
+
 async function checkDeliveryFees(coordinates, alertThreshold, alertAmount) {
   const url = `${API_URL}${coordinates}`;
   try {
@@ -112,10 +118,14 @@ function poll(timeout) {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'startPolling') {
     poll(10 * 60 * 1000);
+    updateIcon(true);
   }
   else if (request.action === 'stopPolling') {
     chrome.storage.local.set({ restaurants: [] })
     clearTimeout(pollingTimeoutID);
+    updateIcon(false);
 
+  } else if (request.action === 'updateIcon') {
+    updateIcon(request.alertEnabled);
   }
 });
