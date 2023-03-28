@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Kotipizza Delivery Alert",
-  "version": "1.0",
+  "version": "1.0.2",
   "description": "Get notifications for nearby Kotipizza restaurants with delivery fees below a set threshold.",
   "action": {
     "default_popup": "popup.html",

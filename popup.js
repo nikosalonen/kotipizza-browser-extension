@@ -1,8 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Get the current values from storage and populate the inputs
   chrome.storage.local.get(['alertThreshold', 'coordinates', 'alertEnabled', 'restaurants', 'alertAmount'], (result) => {
-    const alertThresholdInput = document.getElementById('alertThreshold');
-    alertThresholdInput.value = result.alertThreshold;
+
+    const alertThresholdInput = document.getElementById('alertThreshold') ;
+    //if result.alertThreshold is undefined, set it to 5.8
+    alertThresholdInput.value = result.alertThreshold || 5.8;
     updateAlertThresholdValue(result.alertThreshold);
 
     document.getElementById('alertEnabled').checked = result.alertEnabled;
