@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Kotipizza Delivery Alert",
-  "version": "1.0.2",
-  "description": "Get notifications for nearby Kotipizza restaurants with delivery fees below a set threshold.",
+  "name": "Kotipizza toimitusmaksuhälytin",
+  "version": "1.0.3",
+  "description": "Aseta selain ilmoittamaan, kun lähi kotipizzasi dynaaminen toimitushinta on alle asettamasi kipurajan.",
   "action": {
     "default_popup": "popup.html",
     "default_icon": "assets/icon128-grayscale.png"
