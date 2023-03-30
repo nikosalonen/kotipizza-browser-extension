@@ -8,7 +8,8 @@ Icon by Satawat Foto Anukul https://freeicons.io/profile/103766
 
 ## How to
 
-![image](https://user-images.githubusercontent.com/185737/227783507-ab6e8322-791a-4572-984c-b966fde1b33c.png)
+![image](https://user-images.githubusercontent.com/185737/228777573-2670de9c-13f6-4cc7-8357-a37eecf9931b.png)
+
 
 
 * Set alert treshold
