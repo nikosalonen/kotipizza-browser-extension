@@ -1,48 +1,36 @@
 const API_URL = 'https://apim-kotipizza-ecom-prod.azure-api.net/webshop/v1/restaurants/nearby?type=DELIVERY&coordinates=';
 let pollingTimeoutID;
 
-
-
 function updateIcon(alertEnabled) {
   const iconPath = alertEnabled ? 'assets/icon128.png' : 'assets/icon128-grayscale.png';
   chrome.action.setIcon({ path: iconPath });
 }
-
 
 async function checkDeliveryFees(coordinates, alertThreshold, alertAmount) {
   const url = `${API_URL}${coordinates}`;
   try {
     const response = await fetch(url);
     const data = await response.json();
-    console.log('Fetched data:', data); // Add this line
+    console.log('Fetched data:', data);
 
-    //if data has restaurants, save them to storage
     if (data.length > 0) {
       chrome.storage.local.set({ restaurants: data });
     }
-    //if alertAmount is 1, create notification for the restaurant with the lowest delivery fee that is not closed and has a delivery fee lower than alertThreshold
     if (alertAmount === "1") {
       const lowestDeliveryFee = data.reduce((prev, current) => (prev.dynamicDeliveryFee < current.dynamicDeliveryFee) ? prev : current);
       if (lowestDeliveryFee.openForDeliveryStatus !== "CLOSED" && lowestDeliveryFee.dynamicDeliveryFee <= alertThreshold) {
         createNotification(lowestDeliveryFee);
       }
-    }
-    //if alertAmount is 2, create notification for the restaurant with the lowest delivery estimate that is not closed and has a delivery fee lower than alertThreshold
-    else if (alertAmount === "2") {
+    } else if (alertAmount === "2") {
       const lowestDeliveryEstimate = data.reduce((prev, current) => (prev.currentDeliveryEstimate < current.currentDeliveryEstimate) ? prev : current);
       if (lowestDeliveryEstimate.openForDeliveryStatus !== "CLOSED" && lowestDeliveryEstimate.dynamicDeliveryFee <= alertThreshold) {
         createNotification(lowestDeliveryEstimate);
       }
     }
-
-
   } catch (error) {
-    console.error('Error fetching data:', error); // Add this line
+    console.error('Error fetching data:', error);
   }
 }
-
-
-// get coordinates from kotipizza.fi nearby restaurants api
 chrome.webRequest.onCompleted.addListener(
   (details) => {
     if (
@@ -52,16 +40,15 @@ chrome.webRequest.onCompleted.addListener(
       details.initiator === "https://www.kotipizza.fi"
     ) {
 
-      //value of coordinates is coords parameter from details.url
       const coordinates = details.url.split('coordinates=')[1];
       chrome.storage.local.set({ coordinates }, () => {
         console.log("coordinates saved to storage")
         chrome.storage.local.get(['coordinates', 'alertThreshold', 'alertEnabled', 'alertAmount'], (result) => {
-          const alertThreshold = result.alertThreshold;
-          const alertAmount = result.alertAmount;
+          const { alertThreshold, alertAmount } = result;
           checkDeliveryFees(coordinates, alertThreshold, alertAmount);
         });
       });
+
     }
   },
   {
@@ -70,9 +57,6 @@ chrome.webRequest.onCompleted.addListener(
     ]
   }
 );
-
-
-
 function createNotification(restaurant) {
   self.registration.showNotification('🍕 Pizza time!', {
     icon: 'icon128.png',
@@ -96,8 +80,6 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-
-
 chrome.storage.local.get(['coordinates', 'alertThreshold', 'alertEnabled', 'alertAmount'], (result) => {
   if (result.alertEnabled) {
     checkDeliveryFees(result.coordinates, result.alertThreshold, result.alertAmount);
@@ -114,17 +96,15 @@ function poll(timeout) {
   });
 }
 
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'startPolling') {
     poll(10 * 60 * 1000);
     updateIcon(true);
   }
   else if (request.action === 'stopPolling') {
-    chrome.storage.local.set({ restaurants: [] })
+    chrome.storage.local.set({ restaurants: [] });
     clearTimeout(pollingTimeoutID);
     updateIcon(false);
-
   } else if (request.action === 'updateIcon') {
     updateIcon(request.alertEnabled);
   }
