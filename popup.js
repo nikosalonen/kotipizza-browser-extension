@@ -1,70 +1,52 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Get the current values from storage and populate the inputs
+  const $ = (selector) => document.querySelector(selector);
+
   chrome.storage.local.get(['alertThreshold', 'coordinates', 'alertEnabled', 'restaurants', 'alertAmount'], (result) => {
+    const { alertThreshold, coordinates, alertEnabled, restaurants, alertAmount } = result;
 
-    const alertThresholdInput = document.getElementById('alertThreshold') ;
-    //if result.alertThreshold is undefined, set it to 5.8
-    alertThresholdInput.value = result.alertThreshold || 5.8;
-    updateAlertThresholdValue(result.alertThreshold);
+    const alertThresholdInput = $('#alertThreshold');
+    alertThresholdInput.value = alertThreshold || 5.8;
+    updateAlertThresholdValue(alertThreshold);
 
-    document.getElementById('alertEnabled').checked = result.alertEnabled;
+    $('#alertEnabled').checked = alertEnabled;
 
-    //select the alertAmount option that matches the value in storage
-    const alertAmount = document.getElementById('alertAmount');
-    for (let i = 0; i < alertAmount.options.length; i++) {
-      if (alertAmount.options[i].value === result.alertAmount) {
-        alertAmount.options[i].selected = true;
-        break;
-      }
+    const alertAmountSelect = $('#alertAmount');
+    alertAmountSelect.value = alertAmount || alertAmountSelect.options[0].value;
+
+    if (restaurants?.length && alertEnabled) {
+      generateRestaurantsTable(restaurants);
     }
 
-    if (result.restaurants?.length && result.alertEnabled) {
-      generateRestaurantsTable(result.restaurants);
-    }
-    const coords = document.getElementById('coordinates');
-    if (!result.coordinates) {
-      coords.innerHTML = 'Ei sijantitietoa, käy asettamassa toimitusosoite kotipizza.fi sivulla.';
-      coords.style.display = "flex"
+    const coords = $('#coordinates');
+    if (!coordinates) {
+      coords.textContent = 'Ei sijantitietoa, käy asettamassa toimitusosoite kotipizza.fi sivulla.';
+      coords.style.display = "flex";
     } else {
-      document.getElementById('coordinates').innerHTML = "";
-      coords.style.display = "none"
+      coords.style.display = "none";
     }
   });
+  $('#save').addEventListener('click', () => {
+    const alertThreshold = $('#alertThreshold').value;
+    const alertEnabled = $('#alertEnabled').checked;
+    const alertAmount = $('#alertAmount').value;
+    const saveStatus = $('#saveStatus');
 
-  // Save button click event listener
-  document.getElementById('save').addEventListener('click', () => {
-    const alertThreshold = (document.getElementById('alertThreshold').value);
-    const alertEnabled = document.getElementById('alertEnabled').checked;
-    const saveStatus = document.getElementById('saveStatus');
-    const alertAmount = document.getElementById('alertAmount').value;
-    if (alertEnabled) {
-      startPolling();
-    } else {
-      stopPolling();
-    }
+    alertEnabled ? startPolling() : stopPolling();
     updateIcon(alertEnabled);
-    chrome.storage.local.set({
-      alertThreshold: alertThreshold,
-      alertEnabled: alertEnabled,
-      alertAmount: alertAmount,
-    }, () => {
-      const lastError = chrome.runtime.lastError;
+    chrome.storage.local.set({ alertThreshold, alertEnabled, alertAmount }, () => {
+      const { lastError } = chrome.runtime;
       if (lastError) {
-        saveStatus.innerHTML = `Tallennus epäonnistui: ${lastError.message}`;
+        saveStatus.textContent = `Tallennus epäonnistui: ${lastError.message}`;
         saveStatus.style.color = 'red';
       } else {
-        saveStatus.innerHTML = 'Tallennettu!';
+        saveStatus.textContent = 'Tallennettu!';
         saveStatus.style.color = 'white';
-        // Optionally, clear the message after a few seconds
         setTimeout(() => {
-          saveStatus.innerHTML = '';
+          saveStatus.textContent = '';
         }, 3000);
       }
     });
-
   });
-
-
   function generateRestaurantsTable(restaurants) {
     const table = document.createElement('table');
     table.style.width = '100%';
@@ -116,8 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateIcon(alertEnabled) {
     chrome.runtime.sendMessage({ action: 'updateIcon', alertEnabled: alertEnabled });
   }
-
-
   function updateAlertThresholdValue(value) {
     document.getElementById('alertThresholdValue').textContent = `${value} €`;
   }
@@ -129,8 +109,5 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAlertThresholdValue(event.target.value);
   });
 
-  // Add the following line inside the DOMContentLoaded event listener
   updateAlertThresholdValue(document.getElementById('alertThreshold').value);
-
-
 });
