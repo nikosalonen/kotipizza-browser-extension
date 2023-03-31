@@ -98,7 +98,7 @@ function poll(timeout) {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'startPolling') {
-    poll(10 * 60 * 1000);
+    poll(5 * 60 * 1000); // data is updated every 10 minutes but we get feedback faster polling every 5 minutes
     updateIcon(true);
   }
   else if (request.action === 'stopPolling') {
