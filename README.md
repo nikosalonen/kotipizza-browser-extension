@@ -1,16 +1,14 @@
 # kotipizza-chrome-extension
+
 Get notifications for nearby Kotipizza restaurants with delivery fees below a set threshold.
 
-Font downloaded from https://fontsgeek.com/fonts/bentonsans-comp-black-regular
+Font downloaded from <https://fontsgeek.com/fonts/bentonsans-comp-black-regular>
 
-Icon by Satawat Foto Anukul https://freeicons.io/profile/103766
-
+Icon by Satawat Foto Anukul <https://freeicons.io/profile/103766>
 
 ## How to
 
 ![image](https://user-images.githubusercontent.com/185737/228777573-2670de9c-13f6-4cc7-8357-a37eecf9931b.png)
-
-
 
 * Set alert treshold
 * Choose if you want cheapest or fastest delivery if multiple restaurants available
@@ -21,7 +19,6 @@ Extension polls the delivery info endpoint every 5 minutes and gives browser not
 
 ![image](https://user-images.githubusercontent.com/185737/227783217-92709826-c4a2-4e92-be0d-926039c5ef7c.png)
 
-
 ## Download from Chrome web store
 
-https://chrome.google.com/webstore/detail/kotipizza-toimitusmaksuh%C3%A4/feiimdjbghdpmkdkphpmlnmamkknlmjp?hl=fi&authuser=0
+<https://chrome.google.com/webstore/detail/kotipizza-toimitusmaksuh%C3%A4/feiimdjbghdpmkdkphpmlnmamkknlmjp?hl=fi&authuser=0>
