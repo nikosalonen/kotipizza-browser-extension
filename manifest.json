@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Kotipizza toimitusmaksuhälytin",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Aseta selain ilmoittamaan, kun lähi kotipizzasi dynaaminen toimitushinta on alle asettamasi kipurajan.",
   "action": {
     "default_popup": "popup.html",
