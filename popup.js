@@ -1,210 +1,121 @@
 document.addEventListener("DOMContentLoaded", () => {
 	const $ = (selector) => document.querySelector(selector);
 
-	const elements = {
-		alertThreshold: $("#alertThreshold"),
-		alertEnabled: $("#alertEnabled"),
-		alertAmount: $("#alertAmount"),
-		coordinates: $("#coordinates"),
-		saveButton: $("#save"),
-		saveStatus: $("#saveStatus"),
-		restaurantsTable: $("#restaurantsTable"),
-		refreshButton: $("#refreshButton"),
-		lastRefreshed: $("#lastRefreshed"),
-		nextRefresh: $("#nextRefresh"),
-	};
+	const alertThresholdInput = $("#alertThreshold");
+	const alertAmountSelect = $("#alertAmount");
+	const alertEnabledCheckbox = $("#alertEnabled");
+	const saveButton = $("#save");
+	const saveStatus = $("#saveStatus");
+	const coordinatesDiv = $("#coordinates");
+	const restaurantsTableContainer = $("#restaurantsTableContainer");
 
-	let lastRefreshTime = 0;
-	const cooldownPeriod = 60000; // 1 minute in milliseconds
+	// Function to update the UI
+	function updateUI(data) {
+		alertThresholdInput.value = data.alertThreshold || 5.8;
+		updateAlertThresholdValue(data.alertThreshold);
 
-	function updateUI(settings) {
-		const {
-			alertThreshold,
-			alertEnabled,
-			alertAmount,
-			coordinates,
-			restaurants,
-		} = settings;
+		alertEnabledCheckbox.checked = data.alertEnabled;
 
-		elements.alertThreshold.value = alertThreshold || 5.8;
-		updateAlertThresholdValue(alertThreshold);
+		alertAmountSelect.value =
+			data.alertAmount || alertAmountSelect.options[0].value;
 
-		elements.alertEnabled.checked = alertEnabled;
-		elements.alertAmount.value =
-			alertAmount || elements.alertAmount.options[0].value;
-
-		if (restaurants?.length && alertEnabled) {
-			generateRestaurantsTable(restaurants);
+		if (data.restaurants?.length && data.alertEnabled) {
+			generateRestaurantsTable(data.restaurants);
 		} else {
-			elements.restaurantsTable.innerHTML = "";
+			restaurantsTableContainer.innerHTML =
+				"<p>Ei saatavilla olevia ravintoloita.</p>";
 		}
 
-		if (!coordinates) {
-			elements.coordinates.textContent =
-				"Ei sijantitietoa, käy asettamassa toimitusosoite kotipizza.fi sivulla.";
-			elements.coordinates.style.display = "flex";
+		if (!data.coordinates) {
+			coordinatesDiv.textContent =
+				"Ei sijaintitietoa, käy asettamassa toimitusosoite kotipizza.fi sivulla.";
+			coordinatesDiv.style.display = "flex";
 		} else {
-			elements.coordinates.style.display = "none";
+			coordinatesDiv.style.display = "none";
 		}
-		updateRefreshUI();
-		setTimeout(updatePopupSize, 0);
 	}
 
-	function saveSettings() {
-		const settings = {
-			alertThreshold: elements.alertThreshold.value,
-			alertEnabled: elements.alertEnabled.checked,
-			alertAmount: elements.alertAmount.value,
-		};
-
-		chrome.runtime.sendMessage(
-			{ action: settings.alertEnabled ? "startPolling" : "stopPolling" },
-			(response) => {
-				if (chrome.runtime.lastError) {
-					console.error("Error sending message:", chrome.runtime.lastError);
-					showSaveStatus("Virhe asetuksien tallennuksessa", "red");
-				} else {
-					chrome.storage.local.set(settings, () => {
-						if (chrome.runtime.lastError) {
-							console.error("Error saving settings:", chrome.runtime.lastError);
-							showSaveStatus("Virhe asetuksien tallennuksessa", "red");
-						} else {
-							showSaveStatus("Tallennettu!", "white");
-						}
-					});
-				}
+	// Function to load data and update UI
+	function loadDataAndUpdateUI() {
+		chrome.storage.local.get(
+			[
+				"alertThreshold",
+				"coordinates",
+				"alertEnabled",
+				"restaurants",
+				"alertAmount",
+			],
+			(result) => {
+				updateUI(result);
 			},
 		);
 	}
 
-	function updatePopupSize() {
-		const contentWrapper = $("#content-wrapper");
-		const width = contentWrapper.offsetWidth;
-		const height = contentWrapper.offsetHeight;
+	// Initial load
+	loadDataAndUpdateUI();
 
-		// Add a small buffer to the height to account for potential scrollbar
-		const bufferedHeight = height + 20;
+	// Listen for changes in chrome.storage
+	chrome.storage.onChanged.addListener((changes, namespace) => {
+		if (namespace === "local") {
+			loadDataAndUpdateUI();
+		}
+	});
 
-		document.body.style.width = `${width}px`;
-		document.body.style.height = `${bufferedHeight}px`;
+	saveButton.addEventListener("click", () => {
+		const alertThreshold = alertThresholdInput.value;
+		const alertEnabled = alertEnabledCheckbox.checked;
+		const alertAmount = alertAmountSelect.value;
 
-		// Notify the browser to resize the popup
 		chrome.runtime.sendMessage({
-			action: "resize",
-			width,
-			height: bufferedHeight,
+			action: alertEnabled ? "startPolling" : "stopPolling",
 		});
-	}
 
-	function showSaveStatus(message, color) {
-		elements.saveStatus.textContent = message;
-		elements.saveStatus.style.color = color;
-		setTimeout(() => {
-			elements.saveStatus.textContent = "";
-		}, 3000);
-	}
+		chrome.storage.local.set(
+			{ alertThreshold, alertEnabled, alertAmount },
+			() => {
+				const { lastError } = chrome.runtime;
+				if (lastError) {
+					saveStatus.textContent = `Tallennus epäonnistui: ${lastError.message}`;
+					saveStatus.style.color = "red";
+				} else {
+					saveStatus.textContent = "Tallennettu!";
+					saveStatus.style.color = "white";
+					setTimeout(() => {
+						saveStatus.textContent = "";
+					}, 3000);
+				}
+			},
+		);
+	});
 
 	function generateRestaurantsTable(restaurants) {
 		const table = document.createElement("table");
-		table.className = "restaurants-table";
-
-		const headers = [
-			"Ravintola",
-			"Toimitusmaksu (€)",
-			"Toimitusarvio (minuttia)",
-		];
-		const headerRow = document.createElement("tr");
-
-		for (const headerText of headers) {
-			const header = document.createElement("th");
-			header.textContent = headerText;
-			headerRow.appendChild(header);
-		}
-
-		table.appendChild(headerRow);
+		table.innerHTML = `
+      <tr>
+        <th>Ravintola</th>
+        <th>Toimitusmaksu (€)</th>
+        <th>Toimitusarvio (minuttia)</th>
+      </tr>
+    `;
 
 		for (const restaurant of restaurants) {
-			const row = document.createElement("tr");
-			for (const value of [
-				restaurant.displayName,
-				restaurant.dynamicDeliveryFee,
-				restaurant.currentDeliveryEstimate,
-			]) {
-				const cell = document.createElement("td");
-				cell.textContent = value;
-				row.appendChild(cell);
-			}
-			table.appendChild(row);
+			const row = table.insertRow();
+			row.innerHTML = `
+		<td>${restaurant.displayName}</td>
+		<td>${restaurant.dynamicDeliveryFee}</td>
+		<td>${restaurant.currentDeliveryEstimate}</td>
+	  `;
 		}
 
-		elements.restaurantsTable.innerHTML = "";
-		elements.restaurantsTable.appendChild(table);
+		restaurantsTableContainer.innerHTML = "";
+		restaurantsTableContainer.appendChild(table);
 	}
-
-	function updateRefreshUI() {
-		const now = Date.now();
-		const timeSinceLastRefresh = now - lastRefreshTime;
-		const timeUntilNextRefresh = Math.max(
-			0,
-			cooldownPeriod - timeSinceLastRefresh,
-		);
-
-		elements.refreshButton.disabled = timeUntilNextRefresh > 0;
-		elements.lastRefreshed.textContent = `Viimeksi päivitetty: ${formatTime(lastRefreshTime)}`;
-		elements.nextRefresh.textContent = `Seuraava päivitys: ${formatTime(now + timeUntilNextRefresh)}`;
-
-		if (timeUntilNextRefresh > 0) {
-			setTimeout(updateRefreshUI, 1000);
-		}
-	}
-
-	function formatTime(timestamp) {
-		return new Date(timestamp).toLocaleTimeString("fi-FI");
-	}
-
-	function refreshPrices() {
-		const now = Date.now();
-		if (now - lastRefreshTime >= cooldownPeriod) {
-			lastRefreshTime = now;
-			chrome.storage.local.set({ lastRefreshTime: lastRefreshTime });
-
-			chrome.runtime.sendMessage({ action: "manualRefresh" });
-			showSaveStatus("Päivitetään hintoja...", "white");
-			updateRefreshUI();
-		}
-	}
-
-	chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-		if (message.action === "refreshComplete") {
-			if (message.success) {
-				showSaveStatus("Hinnat päivitetty!", "white");
-				updateUI(message.settings);
-			} else {
-				showSaveStatus("Päivitys epäonnistui. Yritä uudelleen.", "red");
-			}
-			updateRefreshUI();
-		}
-	});
 
 	function updateAlertThresholdValue(value) {
 		$("#alertThresholdValue").textContent = `${value} €`;
 	}
 
-	chrome.storage.local.get(null, (settings) => {
-		lastRefreshTime = settings.lastRefreshTime || 0;
-		updateUI(settings);
-	});
-
-	elements.saveButton.addEventListener("click", saveSettings);
-	elements.alertThreshold.addEventListener("input", (event) => {
+	alertThresholdInput.addEventListener("input", (event) => {
 		updateAlertThresholdValue(event.target.value);
 	});
-	elements.refreshButton.addEventListener("click", refreshPrices);
-
-	// Add event listeners for content changes that might affect size
-	const resizeObserver = new ResizeObserver(updatePopupSize);
-	resizeObserver.observe($("#content-wrapper"));
-
-	// Initial size update
-	updatePopupSize();
 });

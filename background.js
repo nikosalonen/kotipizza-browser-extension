@@ -1,6 +1,5 @@
 const API_URL =
 	"https://apim-kotipizza-ecom-prod.azure-api.net/webshop/v1/restaurants/nearby?type=DELIVERY&coordinates=";
-const POLLING_INTERVAL = 5 * 60 * 1000; // 5 minutes
 let pollingTimeoutID;
 
 function updateIcon(alertEnabled) {
@@ -10,50 +9,51 @@ function updateIcon(alertEnabled) {
 	chrome.action.setIcon({ path: iconPath });
 }
 
-async function checkDeliveryFees(coordinates, alertThreshold, alertAmount) {
+async function fetchRestaurantData(coordinates) {
 	const url = `${API_URL}${coordinates}`;
+	const response = await fetch(url);
+	if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`);
+	}
+	return response.json();
+}
+
+function findBestRestaurant(data, criteria) {
+	return data.reduce((best, current) =>
+		current[criteria] < best[criteria] &&
+		current.openForDeliveryStatus !== "CLOSED"
+			? current
+			: best,
+	);
+}
+
+async function checkDeliveryFees(coordinates, alertThreshold, alertAmount) {
 	try {
-		const response = await fetch(url);
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
-		const data = await response.json();
+		const data = await fetchRestaurantData(coordinates);
 		console.log("Fetched data:", data);
 
 		if (data.length > 0) {
 			chrome.storage.local.set({ restaurants: data });
 		}
 
-		const filterRestaurant = (restaurant) =>
-			restaurant.openForDeliveryStatus !== "CLOSED" &&
-			restaurant.dynamicDeliveryFee <= alertThreshold;
+		const criteriaMap = {
+			1: "dynamicDeliveryFee",
+			2: "currentDeliveryEstimate",
+		};
 
-		const selectedRestaurant = data
-			.filter(filterRestaurant)
-			.reduce(
-				(prev, current) =>
-					alertAmount === "1"
-						? prev.dynamicDeliveryFee < current.dynamicDeliveryFee
-							? prev
-							: current
-						: prev.currentDeliveryEstimate < current.currentDeliveryEstimate
-							? prev
-							: current,
-				null,
-			);
-
-		if (selectedRestaurant) {
-			createNotification(selectedRestaurant);
+		const criteria = criteriaMap[alertAmount];
+		if (criteria) {
+			const bestRestaurant = findBestRestaurant(data, criteria);
+			if (bestRestaurant.dynamicDeliveryFee <= alertThreshold) {
+				createNotification(bestRestaurant);
+			}
 		}
-
-		return { success: true, data };
 	} catch (error) {
 		console.error("Error fetching data:", error);
-		return { success: false, error: error.message };
 	}
 }
 
-chrome.webRequest.onCompleted.addListener(
+chrome?.webRequest?.onCompleted.addListener(
 	(details) => {
 		if (
 			details.url.startsWith(API_URL) &&
@@ -65,10 +65,15 @@ chrome.webRequest.onCompleted.addListener(
 			chrome.storage.local.set({ coordinates }, () => {
 				console.log("coordinates saved to storage");
 				chrome.storage.local.get(
-					["coordinates", "alertThreshold", "alertEnabled", "alertAmount"],
+					["alertThreshold", "alertEnabled", "alertAmount"],
 					(result) => {
-						const { alertThreshold, alertAmount } = result;
-						checkDeliveryFees(coordinates, alertThreshold, alertAmount);
+						if (result.alertEnabled) {
+							checkDeliveryFees(
+								coordinates,
+								result.alertThreshold,
+								result.alertAmount,
+							);
+						}
 					},
 				);
 			});
@@ -90,18 +95,18 @@ chrome.notifications.onClicked.addListener(() => {
 	chrome.tabs.create({ url: "https://kotipizza.fi" });
 });
 
-function poll() {
+function poll(timeout) {
 	chrome.storage.local.get(
 		["coordinates", "alertThreshold", "alertEnabled", "alertAmount"],
-		async (result) => {
+		(result) => {
 			console.log("Polling:", result);
 			if (result.alertEnabled && result.coordinates) {
-				await checkDeliveryFees(
+				checkDeliveryFees(
 					result.coordinates,
 					result.alertThreshold,
 					result.alertAmount,
 				);
-				pollingTimeoutID = setTimeout(poll, POLLING_INTERVAL);
+				pollingTimeoutID = setTimeout(() => poll(timeout), timeout);
 			}
 		},
 	);
@@ -110,8 +115,7 @@ function poll() {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	switch (request.action) {
 		case "startPolling":
-			clearTimeout(pollingTimeoutID);
-			poll();
+			poll(5 * 60 * 1000);
 			updateIcon(true);
 			break;
 		case "stopPolling":
@@ -122,63 +126,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 		case "updateIcon":
 			updateIcon(request.alertEnabled);
 			break;
-		case "manualRefresh":
-			chrome.storage.local.get(
-				["coordinates", "alertThreshold", "alertEnabled", "alertAmount"],
-				async (result) => {
-					const refreshResult = await checkDeliveryFees(
-						result.coordinates,
-						result.alertThreshold,
-						result.alertAmount,
-					);
-					if (refreshResult.success) {
-						chrome.storage.local.get(null, (settings) => {
-							chrome.runtime.sendMessage({
-								action: "refreshComplete",
-								success: true,
-								settings: settings,
-							});
-						});
-					} else {
-						chrome.runtime.sendMessage({
-							action: "refreshComplete",
-							success: false,
-						});
-					}
-				},
+	}
+});
+
+// Initial setup
+chrome.storage.local.get(
+	["coordinates", "alertThreshold", "alertEnabled", "alertAmount"],
+	(result) => {
+		if (result.alertEnabled && result.coordinates) {
+			checkDeliveryFees(
+				result.coordinates,
+				result.alertThreshold,
+				result.alertAmount,
 			);
-			break;
-		case "resize":
-			chrome.windows.getCurrent((window) => {
-				chrome.windows.update(window.id, {
-					width: request.width,
-					height: request.height,
-				});
-			});
-			break;
-	}
-});
-
-// Initialize extension state
-chrome.runtime.onInstalled.addListener(() => {
-	chrome.storage.local.get(
-		["alertThreshold", "alertEnabled", "alertAmount"],
-		(result) => {
-			const defaults = {
-				alertThreshold: 5.8,
-				alertEnabled: false,
-				alertAmount: "1",
-			};
-			chrome.storage.local.set({ ...defaults, ...result }, () => {
-				updateIcon(result.alertEnabled || false);
-			});
-		},
-	);
-});
-
-// Start polling if alertEnabled is true when the extension is loaded
-chrome.storage.local.get(["alertEnabled"], (result) => {
-	if (result.alertEnabled) {
-		poll();
-	}
-});
+		}
+	},
+);
