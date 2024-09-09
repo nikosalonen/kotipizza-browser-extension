@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	};
 
 	let lastRefreshTime = 0;
-	const REFRESH_COOLDOWN = 60000; // 1 minute in milliseconds
+	const cooldownPeriod = 60000; // 1 minute in milliseconds
 
 	function updateUI(settings) {
 		const {
@@ -35,6 +35,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		if (restaurants?.length && alertEnabled) {
 			generateRestaurantsTable(restaurants);
+		} else {
+			elements.restaurantsTable.innerHTML = "";
 		}
 
 		if (!coordinates) {
@@ -45,6 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			elements.coordinates.style.display = "none";
 		}
 		updateRefreshUI();
+		setTimeout(updatePopupSize, 0);
 	}
 
 	function saveSettings() {
@@ -54,16 +57,42 @@ document.addEventListener("DOMContentLoaded", () => {
 			alertAmount: elements.alertAmount.value,
 		};
 
-		settings.alertEnabled ? startPolling() : stopPolling();
-		updateIcon(settings.alertEnabled);
+		chrome.runtime.sendMessage(
+			{ action: settings.alertEnabled ? "startPolling" : "stopPolling" },
+			(response) => {
+				if (chrome.runtime.lastError) {
+					console.error("Error sending message:", chrome.runtime.lastError);
+					showSaveStatus("Virhe asetuksien tallennuksessa", "red");
+				} else {
+					chrome.storage.local.set(settings, () => {
+						if (chrome.runtime.lastError) {
+							console.error("Error saving settings:", chrome.runtime.lastError);
+							showSaveStatus("Virhe asetuksien tallennuksessa", "red");
+						} else {
+							showSaveStatus("Tallennettu!", "white");
+						}
+					});
+				}
+			},
+		);
+	}
 
-		chrome.storage.local.set(settings, () => {
-			const { lastError } = chrome.runtime;
-			if (lastError) {
-				showSaveStatus(`Tallennus epäonnistui: ${lastError.message}`, "red");
-			} else {
-				showSaveStatus("Tallennettu!", "white");
-			}
+	function updatePopupSize() {
+		const contentWrapper = $("#content-wrapper");
+		const width = contentWrapper.offsetWidth;
+		const height = contentWrapper.offsetHeight;
+
+		// Add a small buffer to the height to account for potential scrollbar
+		const bufferedHeight = height + 20;
+
+		document.body.style.width = `${width}px`;
+		document.body.style.height = `${bufferedHeight}px`;
+
+		// Notify the browser to resize the popup
+		chrome.runtime.sendMessage({
+			action: "resize",
+			width,
+			height: bufferedHeight,
 		});
 	}
 
@@ -112,14 +141,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		elements.restaurantsTable.appendChild(table);
 	}
 
-	function startPolling() {
-		chrome.runtime.sendMessage({ action: "startPolling" });
-	}
-
-	function stopPolling() {
-		chrome.runtime.sendMessage({ action: "stopPolling" });
-	}
-
 	function updateRefreshUI() {
 		const now = Date.now();
 		const timeSinceLastRefresh = now - lastRefreshTime;
@@ -147,32 +168,27 @@ document.addEventListener("DOMContentLoaded", () => {
 			lastRefreshTime = now;
 			chrome.storage.local.set({ lastRefreshTime: lastRefreshTime });
 
-			chrome.runtime.sendMessage({ action: "manualRefresh" }, (response) => {
-				if (response?.success) {
-					showSaveStatus("Hinnat päivitetty!", "white");
-					updateUI(response.settings);
-				} else {
-					showSaveStatus("Päivitys epäonnistui. Yritä uudelleen.", "red");
-				}
-				updateRefreshUI();
-			});
+			chrome.runtime.sendMessage({ action: "manualRefresh" });
+			showSaveStatus("Päivitetään hintoja...", "white");
+			updateRefreshUI();
 		}
 	}
 
-	function updateIcon(alertEnabled) {
-		chrome.runtime.sendMessage({ action: "updateIcon", alertEnabled });
-	}
+	chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+		if (message.action === "refreshComplete") {
+			if (message.success) {
+				showSaveStatus("Hinnat päivitetty!", "white");
+				updateUI(message.settings);
+			} else {
+				showSaveStatus("Päivitys epäonnistui. Yritä uudelleen.", "red");
+			}
+			updateRefreshUI();
+		}
+	});
 
 	function updateAlertThresholdValue(value) {
 		$("#alertThresholdValue").textContent = `${value} €`;
 	}
-
-	chrome.storage.local.get(null, updateUI);
-
-	elements.saveButton.addEventListener("click", saveSettings);
-	elements.alertThreshold.addEventListener("input", (event) => {
-		updateAlertThresholdValue(event.target.value);
-	});
 
 	chrome.storage.local.get(null, (settings) => {
 		lastRefreshTime = settings.lastRefreshTime || 0;
@@ -184,4 +200,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		updateAlertThresholdValue(event.target.value);
 	});
 	elements.refreshButton.addEventListener("click", refreshPrices);
+
+	// Add event listeners for content changes that might affect size
+	const resizeObserver = new ResizeObserver(updatePopupSize);
+	resizeObserver.observe($("#content-wrapper"));
+
+	// Initial size update
+	updatePopupSize();
 });
