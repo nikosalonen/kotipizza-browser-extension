@@ -111,6 +111,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 		updateIcon(false);
 	} else if (request.action === "updateIcon") {
 		updateIcon(request.alertEnabled);
+	} else if (request.action === "manualRefresh") {
+		chrome.storage.local.get(
+			["coordinates", "alertThreshold", "alertEnabled", "alertAmount"],
+			(result) => {
+				checkDeliveryFees(
+					result.coordinates,
+					result.alertThreshold,
+					result.alertAmount,
+				)
+					.then(() => {
+						chrome.storage.local.get(null, (settings) => {
+							sendResponse({ success: true, settings: settings });
+						});
+					})
+					.catch((error) => {
+						console.error("Manual refresh failed:", error);
+						sendResponse({ success: false });
+					});
+			},
+		);
+		return true; // Indicates that the response is asynchronous
 	}
 });
 

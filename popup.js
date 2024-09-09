@@ -9,7 +9,13 @@ document.addEventListener("DOMContentLoaded", () => {
 		saveButton: $("#save"),
 		saveStatus: $("#saveStatus"),
 		restaurantsTable: $("#restaurantsTable"),
+		refreshButton: $("#refreshButton"),
+		lastRefreshed: $("#lastRefreshed"),
+		nextRefresh: $("#nextRefresh"),
 	};
+
+	let lastRefreshTime = 0;
+	const REFRESH_COOLDOWN = 60000; // 1 minute in milliseconds
 
 	function updateUI(settings) {
 		const {
@@ -38,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		} else {
 			elements.coordinates.style.display = "none";
 		}
+		updateRefreshUI();
 	}
 
 	function saveSettings() {
@@ -113,6 +120,45 @@ document.addEventListener("DOMContentLoaded", () => {
 		chrome.runtime.sendMessage({ action: "stopPolling" });
 	}
 
+	function updateRefreshUI() {
+		const now = Date.now();
+		const timeSinceLastRefresh = now - lastRefreshTime;
+		const timeUntilNextRefresh = Math.max(
+			0,
+			cooldownPeriod - timeSinceLastRefresh,
+		);
+
+		elements.refreshButton.disabled = timeUntilNextRefresh > 0;
+		elements.lastRefreshed.textContent = `Viimeksi päivitetty: ${formatTime(lastRefreshTime)}`;
+		elements.nextRefresh.textContent = `Seuraava päivitys: ${formatTime(now + timeUntilNextRefresh)}`;
+
+		if (timeUntilNextRefresh > 0) {
+			setTimeout(updateRefreshUI, 1000);
+		}
+	}
+
+	function formatTime(timestamp) {
+		return new Date(timestamp).toLocaleTimeString("fi-FI");
+	}
+
+	function refreshPrices() {
+		const now = Date.now();
+		if (now - lastRefreshTime >= cooldownPeriod) {
+			lastRefreshTime = now;
+			chrome.storage.local.set({ lastRefreshTime: lastRefreshTime });
+
+			chrome.runtime.sendMessage({ action: "manualRefresh" }, (response) => {
+				if (response?.success) {
+					showSaveStatus("Hinnat päivitetty!", "white");
+					updateUI(response.settings);
+				} else {
+					showSaveStatus("Päivitys epäonnistui. Yritä uudelleen.", "red");
+				}
+				updateRefreshUI();
+			});
+		}
+	}
+
 	function updateIcon(alertEnabled) {
 		chrome.runtime.sendMessage({ action: "updateIcon", alertEnabled });
 	}
@@ -127,4 +173,15 @@ document.addEventListener("DOMContentLoaded", () => {
 	elements.alertThreshold.addEventListener("input", (event) => {
 		updateAlertThresholdValue(event.target.value);
 	});
+
+	chrome.storage.local.get(null, (settings) => {
+		lastRefreshTime = settings.lastRefreshTime || 0;
+		updateUI(settings);
+	});
+
+	elements.saveButton.addEventListener("click", saveSettings);
+	elements.alertThreshold.addEventListener("input", (event) => {
+		updateAlertThresholdValue(event.target.value);
+	});
+	elements.refreshButton.addEventListener("click", refreshPrices);
 });
