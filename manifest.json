@@ -5,21 +5,26 @@
   "description": "Aseta selain ilmoittamaan, kun lähi kotipizzasi dynaaminen toimitushinta on alle asettamasi kipurajan.",
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "assets/icon128-grayscale.png"
+    "default_icon": {
+      "16": "assets/icon16-grayscale.png",
+      "48": "assets/icon48-grayscale.png",
+      "128": "assets/icon128-grayscale.png"
+    }
   },
   "background": {
     "service_worker": "background.js"
   },
   "permissions": [
-    "webRequest",
     "notifications",
     "storage"
   ],
   "host_permissions": [
-    "https://apim-kotipizza-ecom-prod.azure-api.net/",
-    "*://*.kotipizza.fi/*"
+    "https://apim-kotipizza-ecom-prod.azure-api.net/webshop/v1/restaurants/nearby",
+    "https://www.kotipizza.fi/"
   ],
   "icons": {
+    "16": "assets/icon16.png",
+    "48": "assets/icon48.png",
     "128": "assets/icon128.png"
   },
   "options_page": "options.html"
