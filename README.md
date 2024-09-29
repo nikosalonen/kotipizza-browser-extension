@@ -8,8 +8,7 @@ Icon by Satawat Foto Anukul <https://freeicons.io/profile/103766>
 
 ## How to
 
-![image](![image](https://github.com/user-attachments/assets/a87cf638-448a-4b46-82c8-d9fa8c2f94bf)
-)
+![image](https://github.com/user-attachments/assets/cc7d8344-d627-43cc-ace7-611fd71c9bbd)
 
 * Set alert treshold
 * Choose if you want cheapest or fastest delivery if multiple restaurants available
