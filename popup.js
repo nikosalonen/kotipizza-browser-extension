@@ -11,13 +11,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// Function to update the UI
 	function updateUI(data) {
-		alertThresholdInput.value = data.alertThreshold || 5.8;
-		updateAlertThresholdValue(data.alertThreshold);
+		alertThresholdInput.value = data.alertThreshold ?? 5.8;
 
-		alertEnabledCheckbox.checked = data.alertEnabled;
+		updateAlertThresholdValue(alertThresholdInput.value);
+
+		alertEnabledCheckbox.checked = !!data.alertEnabled;
 
 		alertAmountSelect.value =
-			data.alertAmount || alertAmountSelect.options[0].value;
+			data.alertAmount ?? alertAmountSelect.options[0].value;
 
 		if (data.restaurants?.length && data.alertEnabled) {
 			generateRestaurantsTable(data.restaurants);
@@ -44,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				"alertEnabled",
 				"restaurants",
 				"alertAmount",
+				"openForDeliveryStatus",
 			],
 			(result) => {
 				updateUI(result);
