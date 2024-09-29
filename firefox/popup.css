@@ -1,0 +1,261 @@
+@font-face {
+	font-family: "Benton Sans Condensed";
+	src: url("./assets/BentonSans Comp Black Regular.otf") format("opentype");
+	font-display: swap;
+}
+
+:root {
+	--primary-color: #009541;
+	--secondary-color: #6bd1a2;
+	--text-color: #ffffff;
+	--background-color: #f0f0f0;
+	--hover-color: #57b48b;
+	--error-color: #ff6b6b;
+}
+
+body {
+	width: clamp(300px, 90vw, 800px);
+	margin: 0 auto;
+	padding: 20px;
+	font-family: "Benton Sans Condensed", Arial, sans-serif;
+	font-size: 16px;
+	line-height: 1.5;
+	color: var(--text-color);
+	background-color: var(--primary-color);
+}
+
+h1 {
+	text-align: center;
+	text-transform: uppercase;
+	font-weight: 600;
+	font-size: 24px;
+	margin-bottom: 20px;
+}
+
+#content-wrapper {
+	background-color: rgba(255, 255, 255, 0.1);
+	border-radius: 10px;
+	padding: 20px;
+	margin-bottom: 20px;
+}
+
+.form-group {
+	margin-bottom: 15px;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 5px;
+	font-weight: bold;
+}
+
+.range-container {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+}
+
+input[type="range"] {
+	-webkit-appearance: none;
+	width: 100%;
+	background: var(--secondary-color);
+	outline: none;
+	opacity: 0.7;
+	transition: opacity 0.2s;
+	margin-bottom: 5px;
+}
+
+input[type="range"]:hover {
+	opacity: 1;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 20px;
+	height: 20px;
+	background: var(--text-color);
+	cursor: pointer;
+	border-radius: 50%;
+}
+
+#alertThresholdValue {
+	align-self: flex-start;
+	margin-top: 5px;
+}
+
+/* Ensure other inputs and selects have consistent width */
+select,
+input[type="checkbox"],
+button {
+	width: 100%;
+	box-sizing: border-box;
+}
+
+input[type="range"] {
+	-webkit-appearance: none;
+	width: 75%;
+	background: var(--secondary-color);
+	outline: none;
+	opacity: 0.7;
+	transition: opacity 0.2s;
+	margin-right: 10px;
+}
+
+input[type="range"]:hover {
+	opacity: 1;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 25px;
+	height: 25px;
+	background: var(--text-color);
+	cursor: pointer;
+	border-radius: 50%;
+}
+
+#alertThresholdValue {
+	min-width: 40px;
+	text-align: right;
+}
+
+label {
+	display: block;
+	margin-bottom: 5px;
+	font-weight: bold;
+}
+
+input[type="range"],
+select,
+button {
+	width: 100%;
+	padding: 10px;
+	border: none;
+	border-radius: 5px;
+	font-size: 16px;
+}
+
+input[type="range"] {
+	-webkit-appearance: none;
+	background: var(--secondary-color);
+	outline: none;
+	opacity: 0.7;
+	transition: opacity 0.2s;
+	padding: 10px 0;
+}
+
+input[type="range"]:hover {
+	opacity: 1;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 25px;
+	height: 25px;
+	background: var(--text-color);
+	cursor: pointer;
+	border-radius: 50%;
+}
+
+select {
+	background-color: var(--secondary-color);
+	color: var(--text-color);
+}
+
+input[type="checkbox"] {
+	width: auto;
+	margin-right: 10px;
+}
+
+button {
+	background-color: var(--secondary-color);
+	color: var(--text-color);
+	cursor: pointer;
+	transition: background-color 0.3s;
+}
+
+button:hover {
+	background-color: var(--hover-color);
+}
+
+#saveStatus {
+	display: block;
+	margin-top: 10px;
+	text-align: center;
+}
+
+#coordinates {
+	background-color: var(--error-color);
+	color: var(--text-color);
+	padding: 10px;
+	border-radius: 5px;
+	margin-bottom: 20px;
+	text-align: center;
+}
+
+#restaurantsTableContainer {
+	max-height: 300px;
+	overflow-y: auto;
+	background-color: rgba(255, 255, 255, 0.1);
+	border-radius: 10px;
+	padding: 10px;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+th,
+td {
+	padding: 10px;
+	text-align: left;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+th {
+	background-color: var(--secondary-color);
+	color: var(--text-color);
+}
+
+a {
+	color: var(--text-color);
+	text-decoration: underline;
+}
+
+a:hover {
+	text-decoration: none;
+}
+
+#refreshContainer {
+	margin-top: 20px;
+	text-align: center;
+}
+
+#refreshButton {
+	background-color: var(--secondary-color);
+	color: var(--text-color);
+	padding: 10px 20px;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	transition: background-color 0.3s;
+}
+
+#refreshButton:hover {
+	background-color: var(--hover-color);
+}
+
+#refreshButton:disabled {
+	background-color: #cccccc;
+	cursor: not-allowed;
+}
+
+#lastRefreshed,
+#nextRefresh {
+	margin-top: 10px;
+	font-size: 14px;
+}

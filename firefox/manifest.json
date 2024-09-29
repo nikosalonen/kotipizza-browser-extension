@@ -1,33 +1,38 @@
 {
-  "manifest_version": 2,
-  "name": "Kotipizza toimitusmaksuhälytin",
-  "version": "1.2.0",
-  "description": "Aseta selain ilmoittamaan, kun lähi kotipizzasi dynaaminen toimitushinta on alle asettamasi kipurajan.",
-  "browser_action": {
-    "default_popup": "popup.html",
-    "default_icon": "assets/icon128-grayscale.png"
-  },
-  "background": {
-    "scripts": [
-      "background.js"
-    ]
-  },
-  "permissions": [
-    "storage",
-    "webRequest",
-    "notifications",
-    "tabs",
-    "activeTab",
-    "*://apim-kotipizza-ecom-prod.azure-api.net/*",
-    "*://*.kotipizza.fi/*"
-  ],
-  "icons": {
-    "128": "assets/icon128.png"
-  },
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "kotipizza-toimitusmaksuhalytin@torttu.fi",
-      "strict_min_version": "54.0"
-    }
-  }
+	"manifest_version": 2,
+	"name": "Kotipizza toimitusmaksuhälytin",
+	"version": "1.2.0",
+	"description": "Aseta selain ilmoittamaan, kun lähi kotipizzasi dynaaminen toimitushinta on alle asettamasi kipurajan.",
+	"browser_action": {
+		"default_popup": "popup.html",
+		"default_icon": {
+			"48": "assets/icon128-grayscale.png"
+		}
+	},
+	"background": {
+		"scripts": ["background.js"]
+	},
+	"options_ui": {
+		"page": "options.html",
+		"open_in_tab": true
+	},
+	"permissions": [
+		"storage",
+		"webRequest",
+		"webRequestBlocking",
+		"notifications",
+		"tabs",
+		"*://apim-kotipizza-ecom-prod.azure-api.net/*",
+		"*://*.kotipizza.fi/*"
+	],
+	"icons": {
+		"48": "assets/icon128.png",
+		"96": "assets/icon128.png"
+	},
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "kotipizza-toimitusmaksuhalytin@torttu.fi",
+			"strict_min_version": "55.0"
+		}
+	}
 }

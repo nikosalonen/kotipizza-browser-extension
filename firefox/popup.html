@@ -1,271 +1,60 @@
 <!DOCTYPE html>
 <html lang="fi">
-<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 
 <head>
+  <meta charset="UTF-8">
+  <title>Kotipizza Toimitusmaksuhälytin</title>
   <style>
-    html,
-    body {
-      height: auto !important;
-      min-height: 100%;
-      overflow: visible !important;
-      width: 450px;
-      max-height: 600px;
 
-    }
-
-    html {
-
-
-      @font-face {
-        font-family: benton-sans-condensed;
-        src: url('./assets/BentonSans Comp Black Regular.otf' format("opentype"));
-      }
-    }
-
-    body {
-      display: flex;
-      flex-direction: column;
-      margin: 0;
-      padding: 0%;
-      font-family: benton-sans-condensed, Arial, Helvetica, sans-serif;
-
-      font-size: 14px;
-      color: #FFF;
-      background-color: #009541;
-    }
-
-    h1 {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 10px;
-      text-transform: uppercase;
-      font-style: normal;
-      font-weight: 600;
-      font-size: 22px;
-      line-height: 110%;
-      letter-spacing: 0.01em;
-    }
-
-    #form {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 10px;
-    }
-
-    #coordinates {
-
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background-color: red;
-      padding: 15px 5px;
-    }
-
-    input,
-    button {
-      font-size: 16px;
-      border-radius: 25px;
-      border: none;
-      padding: 10px 20px;
-      margin: 5px 0;
-      outline: none;
-      transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    input[type="range"],
-    input[type="checkbox"] {
-      display: block;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    input[type="range"] {
-      border: 2px solid #6bd1a2;
-      background-color: #2e9151;
-      color: #FFF;
-      font-weight: 800;
-      text-align: center;
-    }
-
-    input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
-      border: 2px solid #6bd1a2;
-      background-color: transparent;
-      cursor: pointer;
-    }
-
-    input[type="checkbox"]:checked {
-      background-color: #6bd1a2;
-    }
-
-    button {
-      background-color: #6bd1a2;
-      color: #FFF;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #57b48b;
-    }
-
-    input[type="range"]:focus,
-    button:focus {
-      box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-    }
-
-    input[type="range"]:focus {
-      border-color: #FFF;
-    }
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-
-    th,
-    td {
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 10px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #2e9151;
-      color: #FFF;
-    }
-
-    td {
-      background-color: #4da66d;
-      color: #FFF;
-    }
-
-    #restaurantsTableContainer {
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    select {
-      font-size: 16px;
-      border-radius: 25px;
-      border: 2px solid #6bd1a2;
-      background-color: #2e9151;
-      color: #FFF;
-      padding: 10px 20px;
-      margin: 10px 0;
-      outline: none;
-      cursor: pointer;
-      transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      appearance: none;
-    }
-
-    select:focus {
-      box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-      border-color: #FFF;
-    }
-
-    option {
-      background-color: #4da66d;
-      color: #FFF;
-      padding: 5px;
-    }
-
-    input[type="range"] {
-      -webkit-appearance: none;
-      width: 100%;
-      background-color: transparent;
-      margin: 10px 0;
-    }
-
-    input[type="range"]::-webkit-slider-runnable-track {
-      height: 5px;
-      background-color: #2e9151;
-      border-radius: 25px;
-    }
-
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 20px;
-      height: 20px;
-      background-color: #6bd1a2;
-      border-radius: 50%;
-      cursor: pointer;
-      margin-top: -7.5px;
-    }
-
-    input[type="range"]:focus {
-      outline: none;
-    }
-
-    input[type="range"]:focus::-webkit-slider-runnable-track {
-      background-color: #4da66d;
-    }
-
-    p {
-      color: #FFF;
-      padding: 10px;
-    }
-
-    a {
-      color: #FFF;
-    }
-
-    .row {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      margin-bottom: 10px;
-    }
-
-    label {
-      margin-right: 10px;
-    }
   </style>
 </head>
 
 <body>
-  <h1>Kotipizza toimitusmaksuhälytin</h1>
-  <div id="form">
+  <h1>Kotipizza Toimitusmaksuhälytin</h1>
+  <div id="content-wrapper">
+    <div class="form-group">
+      <label for="alertThreshold">Toimitushinta (2,9 - 8,9€):
+        <input type="range" id="alertThreshold" min="2.9" max="8.9" step="0.1"></label>
+      <span id="alertThresholdValue" aria-live="polite"></span>
+    </div>
 
-    <label for="alertThreshold">Toimitushinta (2,9 - 8,9€):</label>
-    <input type="range" id="alertThreshold" min="2.9" max="8.9" step="0.1">
-    <span id="alertThresholdValue"></span>
-    <div class="row">
-      <label for="alertAmount">Ilmoitetaanko: </label>
+
+    <div class="form-group">
+      <label for="alertAmount">Ilmoitetaanko:</label>
       <select id="alertAmount">
         <option value="1">Halvin toimitus</option>
         <option value="2">Nopein toimitus</option>
       </select>
     </div>
-    <div class="row">
-      <label for="alertEnabled">Seuranta päällä?: </label>
-      <input type="checkbox" id="alertEnabled">
+
+    <div class="form-group checkbox-wrapper">
+      <label>
+        <input type="checkbox" id="alertEnabled">
+        Seuranta päällä?
+      </label>
     </div>
 
     <button id="save">Tallenna</button>
-    <span id="saveStatus"></span>
 
-  </div>
-  <script src="popup.js"></script>
-  <span id="coordinates"></span>
+    <span id="saveStatus" aria-live="polite"></span>
 
-  <div>
+    <div id="coordinates" aria-live="polite"></div>
+
     <p>
-      Vääriä ravintoloita? Päivitä sijaintisi asettamalla osoite osoitteessa <a target="_blank"
-        href="https://www.kotipizza.fi">kotipizza.fi</a>.
+      Vääriä ravintoloita? Päivitä sijaintisi asettamalla osoite osoitteessa
+      <a href="https://www.kotipizza.fi" target="_blank" rel="noopener noreferrer">kotipizza.fi</a>.
     </p>
-  </div>
-  <div id="restaurantsTableContainer">
-    <div id="restaurantsTable"></div>
+
+    <div id="restaurantsTableContainer"></div>
+
+    <div id="refreshContainer">
+      <button id="refreshButton">Päivitä</button>
+      <div id="lastRefreshed"></div>
+      <div id="nextRefresh"></div>
+    </div>
   </div>
 
+  <script src="popup.js"></script>
 </body>
 
 </html>

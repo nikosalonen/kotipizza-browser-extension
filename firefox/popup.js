@@ -1,113 +1,134 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const $ = (selector) => document.querySelector(selector);
+const browser = window.browser || window.chrome;
 
-  browser.storage.local.get(['alertThreshold', 'coordinates', 'alertEnabled', 'restaurants', 'alertAmount']).then((result) => {
-    const { alertThreshold, coordinates, alertEnabled, restaurants, alertAmount } = result;
+document.addEventListener("DOMContentLoaded", () => {
+	const $ = (selector) => document.querySelector(selector);
 
-    const alertThresholdInput = $('#alertThreshold');
-    alertThresholdInput.value = alertThreshold || 5.8;
-    updateAlertThresholdValue(alertThreshold);
+	const alertThresholdInput = $("#alertThreshold");
+	const alertAmountSelect = $("#alertAmount");
+	const alertEnabledCheckbox = $("#alertEnabled");
+	const saveButton = $("#save");
+	const saveStatus = $("#saveStatus");
+	const coordinatesDiv = $("#coordinates");
+	const restaurantsTableContainer = $("#restaurantsTableContainer");
 
-    $('#alertEnabled').checked = alertEnabled;
+	// Function to update the UI
+	function updateUI(data) {
+		alertThresholdInput.value = data.alertThreshold ?? 5.8;
 
-    const alertAmountSelect = $('#alertAmount');
-    alertAmountSelect.value = alertAmount || alertAmountSelect.options[0].value;
+		updateAlertThresholdValue(alertThresholdInput.value);
 
-    if (restaurants?.length && alertEnabled) {
-      generateRestaurantsTable(restaurants);
-    }
-    const coords = $('#coordinates');
-    if (!coordinates) {
-      coords.innerHTML = "Ei sijantitietoa, käy asettamassa toimitusosoite <a style=\"display:inline;\"href=\"https://www.kotipizza.fi/#AddressSelectionSummaryModal\" target=\"_blank\">kotipizza.fi</a> sivulla.";
-      coords.style.display = "flex";
-    } else {
-      coords.style.display = "none";
-    }
-  });
+		alertEnabledCheckbox.checked = !!data.alertEnabled;
 
-  $('#save').addEventListener('click', () => {
-    const alertThreshold = $('#alertThreshold').value;
-    const alertEnabled = $('#alertEnabled').checked;
-    const alertAmount = $('#alertAmount').value;
-    const saveStatus = $('#saveStatus');
+		alertAmountSelect.value =
+			data.alertAmount ?? alertAmountSelect.options[0].value;
 
-    alertEnabled ? startPolling() : stopPolling();
-    updateIcon(alertEnabled);
-    browser.storage.local.set({ alertThreshold, alertEnabled, alertAmount }, () => {
-      const { lastError } = browser.runtime;
-      if (lastError) {
-        saveStatus.textContent = `Tallennus epäonnistui: ${lastError.message}`;
-        saveStatus.style.color = 'red';
-      } else {
-        saveStatus.textContent = 'Tallennettu!';
-        saveStatus.style.color = 'white';
-        setTimeout(() => {
-          saveStatus.textContent = '';
-        }, 3000);
-      }
-    });
-  });
-  function generateRestaurantsTable(restaurants) {
-    const table = document.createElement('table');
-    table.style.width = '100%';
-    table.style.borderCollapse = 'collapse';
-    table.style.marginTop = '20px';
+		if (data.restaurants?.length && data.alertEnabled) {
+			generateRestaurantsTable(data.restaurants);
+		} else {
+			restaurantsTableContainer.innerHTML =
+				"<p>Ei saatavilla olevia ravintoloita.</p>";
+		}
 
-    const headerRow = document.createElement('tr');
+		if (!data.coordinates) {
+			coordinatesDiv.textContent =
+				"Ei sijaintitietoa, käy asettamassa toimitusosoite kotipizza.fi sivulla.";
+			coordinatesDiv.style.display = "flex";
+		} else {
+			coordinatesDiv.style.display = "none";
+		}
+	}
 
-    ['Ravintola', 'Toimitusmaksu (€)', 'Toimitusarvio (minuttia)'].forEach((headerText) => {
-      const header = document.createElement('th');
-      header.textContent = headerText;
-      header.style.border = '2px solid #FFF';
-      header.style.padding = '10px';
-      header.style.backgroundColor = '#2e9151';
-      header.style.color = '#FFF';
-      headerRow.appendChild(header);
-    });
+	// Function to load data and update UI
+	function loadDataAndUpdateUI() {
+		console.log("Loading data and updating UI");
+		browser.storage.local.get(
+			[
+				"alertThreshold",
+				"coordinates",
+				"alertEnabled",
+				"restaurants",
+				"alertAmount",
+				"openForDeliveryStatus",
+			],
+			(result) => {
+				console.log("Retrieved from storage:", result);
+				updateUI(result);
+			},
+		);
+	}
 
-    table.appendChild(headerRow);
+	// Initial load
+	loadDataAndUpdateUI();
 
-    restaurants.forEach((restaurant) => {
-      const row = document.createElement('tr');
+	// Listen for changes in browser.storage
+	browser.storage.onChanged.addListener((changes, namespace) => {
+		if (namespace === "local") {
+			loadDataAndUpdateUI();
+		}
+	});
 
-      [restaurant.displayName, restaurant.dynamicDeliveryFee, restaurant.currentDeliveryEstimate].forEach((value) => {
-        const cell = document.createElement('td');
-        cell.textContent = value;
-        cell.style.border = '2px solid #FFF';
-        cell.style.padding = '10px';
-        cell.style.backgroundColor = '#4da66d';
-        cell.style.color = '#FFF';
-        row.appendChild(cell);
-      });
+	saveButton.addEventListener("click", () => {
+		const alertThreshold = alertThresholdInput.value;
+		const alertEnabled = alertEnabledCheckbox.checked;
+		const alertAmount = alertAmountSelect.value;
 
-      table.appendChild(row);
-    });
+		browser.runtime.sendMessage({
+			action: alertEnabled ? "startPolling" : "stopPolling",
+		});
 
-    document.getElementById('restaurantsTable').appendChild(table);
+		browser.storage.local.set(
+			{ alertThreshold, alertEnabled, alertAmount },
+			() => {
+				const { lastError } = browser.runtime;
+				if (lastError) {
+					saveStatus.textContent = `Tallennus epäonnistui: ${lastError.message}`;
+					saveStatus.style.color = "red";
+				} else {
+					saveStatus.textContent = "Tallennettu!";
+					saveStatus.style.color = "white";
+					setTimeout(() => {
+						saveStatus.textContent = "";
+					}, 3000);
+				}
+			},
+		);
+	});
 
-  }
+	function generateRestaurantsTable(restaurants) {
+		const table = document.createElement("table");
+		table.innerHTML = `
+      <tr>
+        <th>Ravintola</th>
+        <th>Toimitusmaksu (€)</th>
+        <th>Toimitusarvio (minuttia)</th>
+      </tr>
+    `;
 
-  function startPolling() {
-    browser.runtime.sendMessage({ action: 'startPolling' });
-  }
+		for (const restaurant of restaurants) {
+			const row = table.insertRow();
+			if (restaurant.openForDeliveryStatus === "CLOSED") {
+				row.innerHTML = `
+					<td>${restaurant.displayName}</td>
+					<td colspan="2">SULJETTU</td>
+				`;
+			} else {
+				row.innerHTML = `
+					<td>${restaurant.displayName}</td>
+					<td>${restaurant.dynamicDeliveryFee}</td>
+					<td>${restaurant.currentDeliveryEstimate}</td>
+				`;
+			}
+		}
 
-  function stopPolling() {
-    browser.runtime.sendMessage({ action: 'stopPolling' });
-  }
+		restaurantsTableContainer.innerHTML = "";
+		restaurantsTableContainer.appendChild(table);
+	}
 
-  function updateIcon(alertEnabled) {
-    browser.runtime.sendMessage({ action: 'updateIcon', alertEnabled: alertEnabled });
-  }
-  function updateAlertThresholdValue(value) {
-    document.getElementById('alertThresholdValue').textContent = `${value} €`;
-  }
+	function updateAlertThresholdValue(value) {
+		$("#alertThresholdValue").textContent = `${value} €`;
+	}
 
-  document.getElementById('alertThreshold').addEventListener('input', (event) => {
-    browser.storage.local.set({
-      alertThreshold: event.target.value,
-    })
-    updateAlertThresholdValue(event.target.value);
-  });
-
-  updateAlertThresholdValue(document.getElementById('alertThreshold').value);
+	alertThresholdInput.addEventListener("input", (event) => {
+		updateAlertThresholdValue(event.target.value);
+	});
 });
