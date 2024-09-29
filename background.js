@@ -44,7 +44,10 @@ async function checkDeliveryFees(coordinates, alertThreshold, alertAmount) {
 		const criteria = criteriaMap[alertAmount];
 		if (criteria) {
 			const bestRestaurant = findBestRestaurant(data, criteria);
-			if (bestRestaurant.dynamicDeliveryFee <= alertThreshold) {
+			if (
+				bestRestaurant.dynamicDeliveryFee <= alertThreshold &&
+				restaurant.openForDeliveryStatus !== "CLOSED"
+			) {
 				createNotification(bestRestaurant);
 			}
 		}
