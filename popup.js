@@ -100,11 +100,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		for (const restaurant of restaurants) {
 			const row = table.insertRow();
-			row.innerHTML = `
-		<td>${restaurant.displayName}</td>
-		<td>${restaurant.dynamicDeliveryFee}</td>
-		<td>${restaurant.currentDeliveryEstimate}</td>
-	  `;
+			if (restaurant.openForDeliveryStatus === "CLOSED") {
+				row.innerHTML = `
+					<td>${restaurant.displayName}</td>
+					<td colspan="2">SULJETTU</td>
+				`;
+			} else {
+				row.innerHTML = `
+					<td>${restaurant.displayName}</td>
+					<td>${restaurant.dynamicDeliveryFee}</td>
+					<td>${restaurant.currentDeliveryEstimate}</td>
+				`;
+			}
 		}
 
 		restaurantsTableContainer.innerHTML = "";
