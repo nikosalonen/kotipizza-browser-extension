@@ -1,0 +1,19 @@
+{
+	"name": "kotipizza-chrome-extension",
+	"version": "1.0.0",
+	"description": "Get notifications for nearby Kotipizza restaurants with delivery fees below a set threshold.",
+	"main": "index.js",
+	"scripts": {
+		"biome:lint": "biome lint --write",
+		"biome:format": "biome format --write"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.2"
+	},
+	"dependencies": {
+		"kotipizza-chrome-extension": "file:"
+	}
+}
