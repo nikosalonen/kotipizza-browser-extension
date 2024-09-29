@@ -1,29 +1,24 @@
 {
-  "manifest_version": 3,
-  "name": "Kotipizza toimitusmaksuhälytin",
-  "version": "1.2.0",
-  "description": "Aseta selain ilmoittamaan, kun lähi kotipizzasi dynaaminen toimitushinta on alle asettamasi kipurajan.",
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "128": "assets/icon128-grayscale.png"
-    }
-  },
-  "background": {
-    "service_worker": "background.js"
-  },
-  "permissions": [
-    "storage",
-    "notifications",
-    "webRequest",
-    "management"
-  ],
-  "host_permissions": [
-    "https://apim-kotipizza-ecom-prod.azure-api.net/",
-    "*://*.kotipizza.fi/*"
-  ],
-  "icons": {
-    "128": "assets/icon128.png"
-  },
-  "options_page": "options.html"
+	"manifest_version": 3,
+	"name": "Kotipizza toimitusmaksuhälytin",
+	"version": "1.2.0",
+	"description": "Aseta selain ilmoittamaan, kun lähi kotipizzasi dynaaminen toimitushinta on alle asettamasi kipurajan.",
+	"action": {
+		"default_popup": "popup.html",
+		"default_icon": {
+			"128": "assets/icon128-grayscale.png"
+		}
+	},
+	"background": {
+		"service_worker": "background.js"
+	},
+	"permissions": ["storage", "notifications", "webRequest", "management"],
+	"host_permissions": [
+		"https://apim-kotipizza-ecom-prod.azure-api.net/",
+		"*://*.kotipizza.fi/*"
+	],
+	"icons": {
+		"128": "assets/icon128.png"
+	},
+	"options_page": "options.html"
 }
